@@ -1,6 +1,0 @@
-@BookingPlatform.Domain_HostAddress = http://localhost:5257
-
-GET {{BookingPlatform.Domain_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
