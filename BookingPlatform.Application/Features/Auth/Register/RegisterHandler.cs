@@ -15,12 +15,14 @@ public class RegisterHandler
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
-
+    private readonly IRoleRepository _roleRepository;
     public RegisterHandler(
         IUserRepository userRepository,
+        IRoleRepository roleRepository,
         IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
+        _roleRepository = roleRepository;
         _passwordHasher = passwordHasher;
     }
 
@@ -43,7 +45,19 @@ public class RegisterHandler
             hashedPassword
         );
 
+        var guestRole = await _roleRepository.GetByNameAsync("Guest");
+
+        if (guestRole == null)
+            throw new Exception("Guest role not found");
+
+        user.UserRoles.Add(new UserRole(
+            user.Id,
+            guestRole.Id,
+            DateTime.UtcNow
+        ));
+
         await _userRepository.AddAsync(user);
+        await _userRepository.SaveChangesAsync();
 
         return "User registered successfully";
     }

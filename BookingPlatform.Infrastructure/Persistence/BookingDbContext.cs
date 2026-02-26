@@ -97,6 +97,9 @@ public class BookingDbContext : DbContext
             .HasForeignKey(b => b.GuestId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Booking>()
+        .Property(b => b.BookingStatus)
+        .HasConversion<string>();
         // --------------------
         // REVIEW
         // --------------------
@@ -111,6 +114,33 @@ public class BookingDbContext : DbContext
             .HasForeignKey(r => r.GuestId)
             .OnDelete(DeleteBehavior.Restrict);
 
+
+        // --------------------
+        // SEED ROLES
+        // --------------------
+        var adminRoleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var ownerRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var guestRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+
+        modelBuilder.Entity<Role>().HasData(
+            new Role(
+                Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                "Admin",
+                "System Administrator"
+            ),
+            new Role(
+                Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                "Owner",
+                "Property Owner"
+            ),
+            new Role(
+                Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                "Guest",
+                "Customer"
+            )
+        );
+
     }
+
 
 }

@@ -48,4 +48,51 @@ public class Booking
         CreatedAt = DateTime.UtcNow;
         CreatedOnUtc = DateTime.UtcNow;
     }
+
+
+    public void SetPricing(
+    decimal cleaningFee,
+    decimal amenitiesUpCharge,
+    decimal priceForPeriod,
+    decimal totalPrice)
+    {
+        CleaningFee = cleaningFee;
+        AmenitiesUpCharge = amenitiesUpCharge;
+        PriceForPeriod = priceForPeriod;
+        TotalPrice = totalPrice;
+    }
+
+
+
+    public void Confirm(DateTime utcNow)
+    {
+        if (BookingStatus != BookingStatus.Pending)
+            throw new Exception("Only pending bookings can be confirmed.");
+
+        BookingStatus = BookingStatus.Confirmed;
+        ConfirmedOnUtc = utcNow;
+        LastModifiedAt = utcNow;
+    }
+
+    public void Reject(DateTime utcNow)
+    {
+        if (BookingStatus != BookingStatus.Pending)
+            throw new Exception("Only pending bookings can be rejected.");
+
+        BookingStatus = BookingStatus.Rejected;
+        RejectedOnUtc = utcNow;
+        LastModifiedAt = utcNow;
+    }
+
+    public void Cancel(DateTime utcNow)
+    {
+        // zakonisht lejojme cancel kur eshte Pending ose Confirmed (para se te filloje)
+        if (BookingStatus != BookingStatus.Pending && BookingStatus != BookingStatus.Confirmed)
+            throw new Exception("Only pending or confirmed bookings can be cancelled.");
+
+        BookingStatus = BookingStatus.Cancelled;
+        CancelledOnUtc = utcNow;
+        LastModifiedAt = utcNow;
+    }
+
 }

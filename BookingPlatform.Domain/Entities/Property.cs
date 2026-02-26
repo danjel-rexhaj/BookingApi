@@ -27,7 +27,7 @@ public class Property
 
     private Property() { }
 
-    public Property(Guid ownerId, Guid addressId, string name, string description, string propertyType, int maxGuests)
+    public Property(Guid ownerId,Guid addressId,string name,string description,string propertyType,int maxGuests,TimeSpan checkInTime,TimeSpan checkOutTime)
     {
         Id = Guid.NewGuid();
         OwnerId = ownerId;
@@ -36,8 +36,17 @@ public class Property
         Description = description;
         PropertyType = propertyType;
         MaxGuests = maxGuests;
+        CheckInTime = checkInTime;
+        CheckOutTime = checkOutTime;
+
         IsActive = true;
         IsApproved = false;
         CreatedAt = DateTime.UtcNow;
     }
+    public void Approve()
+    {
+        IsApproved = true;
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
 }

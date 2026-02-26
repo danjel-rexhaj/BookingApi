@@ -22,6 +22,11 @@ public static class InfrastructureRegistration
         services.AddScoped<IJwtService, JwtService>();
 
 
+        services.AddScoped<IPropertyRepository, PropertyRepository>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+
         return services;
     }
 }

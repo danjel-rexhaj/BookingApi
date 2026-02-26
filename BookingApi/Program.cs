@@ -1,10 +1,12 @@
-﻿using BookingPlatform.Infrastructure.DependencyInjection;
+﻿using BookingApi.Middlewares;
+using BookingPlatform.Application.Features.Auth.Register;
+using BookingPlatform.Infrastructure.DependencyInjection;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using MediatR;
-using BookingPlatform.Application.Features.Auth.Register;
-
+using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +14,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddMediatR(typeof(RegisterCommand));
 
-
+builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -64,9 +66,10 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
-
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddAuthorization();
-
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddMediatR(typeof(RegisterCommand).Assembly);
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -74,7 +77,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

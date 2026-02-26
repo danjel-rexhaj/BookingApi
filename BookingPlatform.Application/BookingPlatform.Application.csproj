@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Folder Include="NewFolder\" />
+    <Folder Include="Properties\GetDetails\" />
   </ItemGroup>
 
   <ItemGroup>
