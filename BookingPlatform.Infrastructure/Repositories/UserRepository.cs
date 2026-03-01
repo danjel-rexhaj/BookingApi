@@ -37,4 +37,27 @@ public class UserRepository : IUserRepository
                 .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Email == email);
     }
+
+
+    public async Task<User> GetByIdAsync(Guid id)
+    {
+        return await _context.Users
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    public async Task<List<User>> GetAllAsync()
+    {
+        return await _context.Users
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+            .ToListAsync();
+    }
+
+    public async Task DeleteAsync(User user)
+    {
+        _context.Users.Remove(user);
+    }
+
 }

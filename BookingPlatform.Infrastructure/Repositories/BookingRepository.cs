@@ -25,9 +25,20 @@ public class BookingRepository : IBookingRepository
 
     public async Task<Booking?> GetByIdAsync(Guid id)
     {
-        return await _context.Bookings
-            .Include(b => b.Property)
+        var booking = await _context.Bookings
             .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (booking == null)
+            return null;
+
+        var now = DateTime.UtcNow;
+
+        booking.ExpireIfNeeded(now);
+        booking.CompleteIfFinished(now);
+
+        await _context.SaveChangesAsync();
+
+        return booking;
     }
 
     public async Task<List<Booking>> GetBookingsForPropertyAsync(Guid propertyId)
@@ -44,8 +55,33 @@ public class BookingRepository : IBookingRepository
 
     public async Task<List<Booking>> GetBookingsForUserAsync(Guid userId)
     {
-        return await _context.Bookings
+        var bookings = await _context.Bookings
             .Where(b => b.GuestId == userId)
             .ToListAsync();
+
+        var now = DateTime.UtcNow;
+
+        foreach (var booking in bookings)
+        {
+            booking.ExpireIfNeeded(now);
+            booking.CompleteIfFinished(now);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return bookings;
+    }
+
+    public async Task<List<SeasonalPrice>> GetSeasonalPricesForPropertyAsync(Guid propertyId)
+    {
+        return await _context.SeasonalPrices
+            .Where(sp => sp.PropertyId == propertyId)
+            .ToListAsync();
+    }
+
+
+    public async Task<List<Booking>> GetAllAsync()
+    {
+        return await _context.Bookings.ToListAsync();
     }
 }

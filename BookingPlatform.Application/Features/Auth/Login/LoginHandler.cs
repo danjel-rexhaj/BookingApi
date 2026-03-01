@@ -12,7 +12,7 @@ using BookingPlatform.Domain.Entities;
 namespace BookingPlatform.Application.Features.Auth.Login;
 
 public class LoginHandler
-    : IRequestHandler<LoginQuery, string>
+    : IRequestHandler<LoginQuery, AuthResponseDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
@@ -28,7 +28,7 @@ public class LoginHandler
         _jwtService = jwtService;
     }
 
-    public async Task<string> Handle(
+    public async Task<AuthResponseDto> Handle(
         LoginQuery request,
         CancellationToken cancellationToken)
     {
@@ -44,6 +44,13 @@ public class LoginHandler
 
         var roles = user.UserRoles.Select(ur => ur.Role.Name);
 
-        return _jwtService.GenerateToken(user, roles);
+        var accessToken = _jwtService.GenerateToken(user, roles);
+        var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
+
+        return new AuthResponseDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
     }
 }

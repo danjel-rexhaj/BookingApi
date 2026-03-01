@@ -11,5 +11,7 @@ public record PropertyDto(
     string Description,
     string City,
     int MaxGuests,
-    string PropertyType
+    string PropertyType,
+    double AverageRating,
+    int TotalReviews
 );

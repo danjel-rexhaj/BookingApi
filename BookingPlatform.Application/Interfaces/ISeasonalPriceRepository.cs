@@ -1,0 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using BookingPlatform.Domain.Entities;
+
+namespace BookingPlatform.Application.Interfaces;
+
+public interface ISeasonalPriceRepository
+{
+    Task<List<SeasonalPrice>> GetByPropertyIdAsync(Guid propertyId);
+    Task AddAsync(SeasonalPrice seasonalPrice);
+}

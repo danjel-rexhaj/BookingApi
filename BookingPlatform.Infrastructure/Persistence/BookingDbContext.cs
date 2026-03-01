@@ -1,4 +1,5 @@
 ﻿using BookingPlatform.Domain.Entities;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -26,20 +27,24 @@ public class BookingDbContext : DbContext
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Review> Reviews => Set<Review>();
 
+    public DbSet<SeasonalPrice> SeasonalPrices => Set<SeasonalPrice>();
+
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    public DbSet<BlockedDate> BlockedDates => Set<BlockedDate>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // --------------------
-        // USER
-        // --------------------
+
+
+
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
 
-        // --------------------
-        // USERROLE (Many-to-Many)
-        // --------------------
+
+
         modelBuilder.Entity<UserRole>()
             .HasKey(ur => new { ur.UserId, ur.RoleId });
 
@@ -53,9 +58,9 @@ public class BookingDbContext : DbContext
             .WithMany(r => r.UserRoles)
             .HasForeignKey(ur => ur.RoleId);
 
-        // --------------------
-        // OWNERPROFILE (1-to-1 with User)
-        // --------------------
+
+
+
         modelBuilder.Entity<OwnerProfile>()
             .HasKey(op => op.UserId);
 
@@ -64,32 +69,29 @@ public class BookingDbContext : DbContext
             .WithOne()
             .HasForeignKey<OwnerProfile>(op => op.UserId);
 
-        // --------------------
-        // PROPERTY (Many-to-1 with User as Owner)
-        // --------------------
-        modelBuilder.Entity<Property>()
-            .HasOne(p => p.Owner)
-            .WithMany()
-            .HasForeignKey(p => p.OwnerId)
+
+
+
+
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.Property)
+            .WithMany(p => p.Bookings)
+            .HasForeignKey(b => b.PropertyId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // --------------------
-        // ADDRESS (1-to-many with Property)
-        // --------------------
+
+
+
+
         modelBuilder.Entity<Property>()
             .HasOne(p => p.Address)
             .WithMany(a => a.Properties)
             .HasForeignKey(p => p.AddressId);
 
 
-        // --------------------
-        // BOOKING
-        // --------------------
-        modelBuilder.Entity<Booking>()
-            .HasOne(b => b.Property)
-            .WithMany()
-            .HasForeignKey(b => b.PropertyId)
-            .OnDelete(DeleteBehavior.Restrict);
+
+
+
 
         modelBuilder.Entity<Booking>()
             .HasOne(b => b.Guest)
@@ -100,9 +102,12 @@ public class BookingDbContext : DbContext
         modelBuilder.Entity<Booking>()
         .Property(b => b.BookingStatus)
         .HasConversion<string>();
-        // --------------------
-        // REVIEW
-        // --------------------
+
+
+
+
+
+
         modelBuilder.Entity<Review>()
             .HasOne(r => r.Booking)
             .WithMany()
@@ -115,9 +120,9 @@ public class BookingDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
 
-        // --------------------
-        // SEED ROLES
-        // --------------------
+
+
+
         var adminRoleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var ownerRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var guestRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
@@ -139,6 +144,34 @@ public class BookingDbContext : DbContext
                 "Customer"
             )
         );
+
+
+
+
+
+        modelBuilder.Entity<Notification>()
+            .HasKey(n => n.Id);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.Message)
+            .IsRequired()
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.Type)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.CreatedAt)
+            .IsRequired();
+
+        modelBuilder.Entity<Notification>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
 
     }
 

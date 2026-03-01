@@ -1,17 +1,17 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
+﻿using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
-using BookingPlatform.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace BookingPlatform.Infrastructure.Services;
 
 public class JwtService : IJwtService
 {
     private readonly IConfiguration _configuration;
-
     public JwtService(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -40,5 +40,33 @@ public class JwtService : IJwtService
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static Dictionary<string, Guid> _refreshTokens = new();
+    public string GenerateRefreshToken(Guid userId)
+    {
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+
+        var refreshToken = Convert.ToBase64String(randomNumber);
+
+        _refreshTokens[refreshToken] = userId;
+
+        return refreshToken;
+    }
+
+
+    public Guid? ValidateRefreshToken(string refreshToken)
+    {
+        if (_refreshTokens.TryGetValue(refreshToken, out var userId))
+            return userId;
+
+        return null;
+    }
+
+    public void RemoveRefreshToken(string refreshToken)
+    {
+        _refreshTokens.Remove(refreshToken);
     }
 }

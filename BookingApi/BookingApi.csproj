@@ -23,4 +23,8 @@
     <ProjectReference Include="..\BookingPlatform.Infrastructure\BookingPlatform.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\" />
+  </ItemGroup>
+
 </Project>

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookingPlatform.Application.Properties.Create
+namespace BookingPlatform.Application.Features.Notifications.MarkAsRead
 {
-    internal class CreatePropertyValidator
+    internal class MarkNotificationAsReadCommand
     {
     }
 }

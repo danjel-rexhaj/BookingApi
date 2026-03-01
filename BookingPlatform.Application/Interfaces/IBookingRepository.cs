@@ -13,5 +13,7 @@ public interface IBookingRepository
     Task<Booking?> GetByIdAsync(Guid id);
     Task<List<Booking>> GetBookingsForPropertyAsync(Guid propertyId);
     Task<List<Booking>> GetBookingsForUserAsync(Guid userId);
+    Task<List<SeasonalPrice>> GetSeasonalPricesForPropertyAsync(Guid propertyId);
+    Task<List<Booking>> GetAllAsync();
     Task SaveChangesAsync();
 }

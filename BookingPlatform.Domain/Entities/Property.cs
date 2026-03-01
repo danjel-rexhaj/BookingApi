@@ -1,4 +1,4 @@
-﻿namespace BookingPlatform.Domain.Entities;
+﻿using BookingPlatform.Domain.Entities;
 
 public class Property
 {
@@ -25,9 +25,26 @@ public class Property
     public DateTime? LastModifiedAt { get; private set; }
     public DateTime? LastBookedOnUtc { get; private set; }
 
+    public ICollection<Booking> Bookings { get; private set; } = new List<Booking>();
+
+
+
+
+    public int? MinimumStay { get; private set; }
+    public int? MaximumStay { get; private set; }
+
+    public decimal? DiscountPercentage { get; private set; }
+    public DateTime? DiscountValidFrom { get; private set; }
+    public DateTime? DiscountValidTo { get; private set; }
+
+
+
+
     private Property() { }
 
-    public Property(Guid ownerId,Guid addressId,string name,string description,string propertyType,int maxGuests,TimeSpan checkInTime,TimeSpan checkOutTime)
+    public Property(Guid ownerId, Guid addressId, string name,
+                    string description, string propertyType, int maxGuests,
+                    TimeSpan checkInTime, TimeSpan checkOutTime)
     {
         Id = Guid.NewGuid();
         OwnerId = ownerId;
@@ -43,10 +60,17 @@ public class Property
         IsApproved = false;
         CreatedAt = DateTime.UtcNow;
     }
+
     public void Approve()
     {
         IsApproved = true;
         LastModifiedAt = DateTime.UtcNow;
     }
 
+
+    public void Suspend()
+    {
+        IsActive = false;
+        LastModifiedAt = DateTime.UtcNow;
+    }
 }

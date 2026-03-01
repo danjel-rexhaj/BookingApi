@@ -25,7 +25,7 @@ namespace BookingPlatform.Application.Properties.Approve
             if (property == null)
                 throw new Exception("Property not found");
 
-            property.Approve();   // do ta shtojmë këtë metodë në entity
+            property.Approve();   
 
             await _repository.SaveChangesAsync();
 

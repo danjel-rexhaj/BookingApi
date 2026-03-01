@@ -1,12 +1,13 @@
 ﻿using BookingApi.Middlewares;
 using BookingPlatform.Application.Features.Auth.Register;
+using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Infrastructure.BackgroundJobs;
 using BookingPlatform.Infrastructure.DependencyInjection;
+using BookingPlatform.Infrastructure.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using BookingPlatform.Application.Interfaces;
-using BookingPlatform.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,15 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddMediatR(typeof(RegisterCommand).Assembly);
+builder.Services.AddHostedService<BookingLifecycleBackgroundService>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<IBlockedDateRepository, BlockedDateRepository>();
+builder.Services.AddScoped<ISeasonalPriceRepository, SeasonalPriceRepository>();
+
+builder.WebHost.UseWebRoot("wwwroot");
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -84,5 +94,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.UseStaticFiles();
 app.Run();

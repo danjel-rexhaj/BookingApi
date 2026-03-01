@@ -14,7 +14,6 @@ public class Review
     public string Comment { get; private set; } = null!;
 
     public DateTime CreatedAt { get; private set; }
-
     private Review() { }
 
     public Review(Guid bookingId, Guid guestId, int rating, string comment)

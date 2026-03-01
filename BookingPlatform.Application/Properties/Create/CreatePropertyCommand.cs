@@ -4,22 +4,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediatR;
 
-namespace BookingPlatform.Application.Properties.Create
-{
-    public class CreatePropertyCommand : IRequest<Guid>
-    {
-        public Guid AddressId { get; set; }
+namespace BookingPlatform.Application.Features.Properties.Create;
 
-        public string Name { get; set; } = null!;
-        public string Description { get; set; } = null!;
-        public string PropertyType { get; set; } = null!;
+public record CreatePropertyCommand(
+    Guid AddressId,
+    string Name,
+    string Description,
+    string PropertyType,
+    int MaxGuests,
+    TimeSpan CheckInTime,
+    TimeSpan CheckOutTime,
 
-        public int MaxGuests { get; set; }
-
-        public TimeSpan CheckInTime { get; set; }
-        public TimeSpan CheckOutTime { get; set; }
-    }
-
-
-}
+    decimal BasePricePerNight,
+    decimal CleaningFee,
+    decimal ServiceFee,
+    decimal TaxPercentage,
+    decimal AdditionalGuestFee
+) : IRequest<Guid>;

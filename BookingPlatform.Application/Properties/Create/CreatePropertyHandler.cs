@@ -1,7 +1,7 @@
-﻿using BookingPlatform.Application.Properties.Create;
+﻿using BookingPlatform.Application.Features.Properties.Create;
+using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
 using MediatR;
-using BookingPlatform.Application.Interfaces;
 
 namespace BookingPlatform.Application.Properties.Create;
 
@@ -20,11 +20,13 @@ public class CreatePropertyHandler
     }
 
     public async Task<Guid> Handle(
-        CreatePropertyCommand request,
-        CancellationToken cancellationToken)
+    CreatePropertyCommand request,
+    CancellationToken cancellationToken)
     {
+        var ownerId = _currentUser.UserId;
+
         var property = new Property(
-            _currentUser.UserId,
+            ownerId,
             request.AddressId,
             request.Name,
             request.Description,

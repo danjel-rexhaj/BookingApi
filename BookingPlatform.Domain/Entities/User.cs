@@ -44,4 +44,17 @@ public class User
         IsActive = false;
         LastModifiedAt = DateTime.UtcNow;
     }
+
+
+    public void ChangePassword(string newPasswordHash)
+    {
+        PasswordHash = newPasswordHash;
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateProfileImage(string imageUrl)
+    {
+        ProfileImageUrl = imageUrl;
+        LastModifiedAt = DateTime.UtcNow;
+    }
 }

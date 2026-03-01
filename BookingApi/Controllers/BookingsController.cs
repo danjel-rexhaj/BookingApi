@@ -1,4 +1,5 @@
-﻿using BookingPlatform.Application.Features.Bookings.Cancel;
+﻿using BookingPlatform.Application.Features.Admin.Bookings.GetAllBookings;
+using BookingPlatform.Application.Features.Bookings.Cancel;
 using BookingPlatform.Application.Features.Bookings.Confirm;
 using BookingPlatform.Application.Features.Bookings.Create;
 using BookingPlatform.Application.Features.Bookings.GetUserBookings;
@@ -6,7 +7,6 @@ using BookingPlatform.Application.Features.Bookings.Reject;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace BookingApi.Controllers;
 
 [ApiController]
@@ -60,11 +60,20 @@ public class BookingsController : ControllerBase
         return NoContent();
     }
 
-    [Authorize] // Guest ose edhe Owner nqs e ka bere si user, por kontrolli real behet ne handler me GuestId
+    [Authorize] 
     [HttpPut("{id:guid}/cancel")]
     public async Task<IActionResult> Cancel(Guid id)
     {
         await _mediator.Send(new CancelBookingCommand(id));
         return NoContent();
+    }
+
+
+    [HttpGet("admin/all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllBookings()
+    {
+        var result = await _mediator.Send(new GetAllBookingsQuery());
+        return Ok(result);
     }
 }

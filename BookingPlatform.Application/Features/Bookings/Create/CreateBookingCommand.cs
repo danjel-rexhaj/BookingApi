@@ -12,8 +12,5 @@ public record CreateBookingCommand(
     Guid PropertyId,
     DateTime StartDate,
     DateTime EndDate,
-    int GuestCount,
-    decimal PricePerNight,
-    decimal CleaningFee,
-    decimal AmenitiesUpCharge
+    int GuestCount
 ) : IRequest<Guid>;

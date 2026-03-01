@@ -16,5 +16,10 @@ public interface IPropertyRepository
     Task<List<Property>> SearchAsync(
         string? city,
         int? guests,
-        string? propertyType);
+        string? propertyType,
+        DateTime? startDate,
+        DateTime? endDate,
+        string? sortBy,
+        int page,
+        int pageSize);
 }

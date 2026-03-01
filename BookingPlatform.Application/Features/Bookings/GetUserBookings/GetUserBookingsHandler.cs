@@ -32,7 +32,8 @@ public class GetUserBookingsHandler
             StartDate = b.StartDate,
             EndDate = b.EndDate,
             Status = b.BookingStatus.ToString(),
-            TotalPrice = b.TotalPrice
+            TotalPrice = b.TotalPrice,
+            RefundAmount = b.RefundAmount
         }).ToList();
     }
 }

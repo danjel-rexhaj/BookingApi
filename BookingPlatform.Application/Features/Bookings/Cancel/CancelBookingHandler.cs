@@ -1,10 +1,11 @@
-﻿using System;
+﻿using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Domain.Entities;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
-using MediatR;
 
 namespace BookingPlatform.Application.Features.Bookings.Cancel;
 
@@ -24,12 +25,17 @@ public class CancelBookingHandler : IRequestHandler<CancelBookingCommand, Unit>
         var booking = await _bookingRepo.GetByIdAsync(request.BookingId);
         if (booking == null) throw new Exception("Booking not found.");
 
-        // Vetem ai qe e ka bere booking (GuestId)
         if (booking.GuestId != _currentUser.UserId)
             throw new Exception("You are not allowed to cancel this booking.");
 
-        booking.Cancel(DateTime.UtcNow);
+        booking.CancelWithPolicy(); 
+
         await _bookingRepo.SaveChangesAsync();
+
+        var notification = new Notification(
+            booking.GuestId,
+            "Your booking has been rejected.",
+            "BookingRejected");
 
         return Unit.Value;
     }
