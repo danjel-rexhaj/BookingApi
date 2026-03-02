@@ -49,7 +49,6 @@ public class CreateReviewHandler
         if (alreadyReviewed)
             throw new Exception("Booking already reviewed");
 
-        // 🔹 Create Review
         var review = new Review(
             booking.Id,
             booking.GuestId,
@@ -58,13 +57,12 @@ public class CreateReviewHandler
 
         await _reviewRepo.AddAsync(review);
 
-        // 🔹 Load Property (mos përdor navigation property)
         var property = await _propertyRepo.GetByIdAsync(booking.PropertyId);
 
         if (property == null)
             throw new Exception("Property not found");
 
-        // 🔹 Create Notification for Owner
+        
         var notification = new Notification(
             property.OwnerId,
             "Your property received a new review.",
