@@ -4,6 +4,7 @@ using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Infrastructure.BackgroundJobs;
 using BookingPlatform.Infrastructure.DependencyInjection;
 using BookingPlatform.Infrastructure.Persistence;
+using BookingPlatform.Infrastructure.Persistence.Repositories;
 using BookingPlatform.Infrastructure.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -81,13 +82,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IBlockedDateRepository, BlockedDateRepository>();
 builder.Services.AddScoped<ISeasonalPriceRepository, SeasonalPriceRepository>();
-
-
+builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<IPropertyImageRepository, PropertyImageRepository>();
 builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddHostedService<BookingReminderService>();
-
+builder.Services.AddScoped<IPropertyAmenityRepository, PropertyAmenityRepository>();
+builder.Services.AddScoped<IOwnerProfileRepository, OwnerProfileRepository>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

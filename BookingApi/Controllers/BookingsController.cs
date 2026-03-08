@@ -46,7 +46,19 @@ public class BookingsController : ControllerBase
     }
 
 
-    [Authorize(Roles = "Owner")]
+
+
+    [HttpGet("admin/all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllBookings()
+    {
+        var result = await _mediator.Send(new GetAllBookingsQuery());
+        return Ok(result);
+    }
+
+
+
+    [Authorize(Roles = "Owner,Admin")]
     [HttpPut("{id:guid}/confirm")]
     public async Task<IActionResult> Confirm(Guid id)
     {
@@ -54,7 +66,7 @@ public class BookingsController : ControllerBase
         return NoContent();
     }
 
-    [Authorize(Roles = "Owner")]
+    [Authorize(Roles = "Owner,Admin")]
     [HttpPut("{id:guid}/reject")]
     public async Task<IActionResult> Reject(Guid id)
     {
@@ -70,12 +82,4 @@ public class BookingsController : ControllerBase
         return NoContent();
     }
 
-
-    [HttpGet("admin/all")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetAllBookings()
-    {
-        var result = await _mediator.Send(new GetAllBookingsQuery());
-        return Ok(result);
-    }
 }

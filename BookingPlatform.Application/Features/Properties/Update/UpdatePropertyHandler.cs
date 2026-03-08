@@ -15,10 +15,11 @@ namespace BookingPlatform.Application.Features.Properties.Update
         : IRequestHandler<UpdatePropertyCommand, Unit>
     {
         private readonly IPropertyRepository _repository;
-
-        public UpdatePropertyHandler(IPropertyRepository repository)
+        private readonly IPropertyRuleRepository _propertyRuleRepository;
+        public UpdatePropertyHandler(IPropertyRepository repository, IPropertyRuleRepository propertyAmenityRepository)
         {
             _repository = repository;
+            _propertyRuleRepository = propertyAmenityRepository;
         }
 
         public async Task<Unit> Handle(UpdatePropertyCommand request, CancellationToken cancellationToken)
@@ -36,6 +37,11 @@ namespace BookingPlatform.Application.Features.Properties.Update
                 request.BasePricePerNight,
                 request.CheckInTime,
                 request.CheckOutTime
+            );
+
+            property.SetStayLimits(
+                request.MinimumStay,
+                request.MaximumStay
             );
 
             await _repository.SaveChangesAsync();

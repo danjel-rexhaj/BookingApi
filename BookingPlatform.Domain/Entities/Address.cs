@@ -21,4 +21,13 @@ public class Address
         Street = street;
         PostalCode = postalCode;
     }
+
+
+    public void Update(string country, string city, string street, string postalCode)
+    {
+        Country = country;
+        City = city;
+        Street = street;
+        PostalCode = postalCode;
+    }
 }

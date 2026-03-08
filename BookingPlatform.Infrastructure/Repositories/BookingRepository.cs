@@ -26,6 +26,7 @@ public class BookingRepository : IBookingRepository
     public async Task<Booking?> GetByIdAsync(Guid id)
     {
         var booking = await _context.Bookings
+            .Include(b => b.Property)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (booking == null)

@@ -42,15 +42,6 @@ public class AuthController : ControllerBase
     }
 
 
-
-    [Authorize]
-    [HttpGet("secure-test")]
-    public IActionResult SecureTest()
-    {
-        return Ok("You are authenticated 🔥");
-    }
-
-
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenCommand command)
     {
@@ -66,5 +57,15 @@ public class AuthController : ControllerBase
         _jwtService.RemoveRefreshToken(refreshToken);
         return NoContent();
     }
+
+
+
+    [Authorize]
+    [HttpGet("secure-test")]
+    public IActionResult SecureTest()
+    {
+        return Ok("You are authenticated 🔥");
+    }
+
 
 }

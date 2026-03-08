@@ -14,7 +14,7 @@ public class BookingDbContext : DbContext
         : base(options)
     {
     }
-
+    public DbSet<PropertyImage> PropertyImages { get; set; }
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();

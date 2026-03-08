@@ -20,29 +20,29 @@ public class AdminUsersController : ControllerBase
         _mediator = mediator;
     }
 
+
+
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllUsers()
     {
         var result = await _mediator.Send(new GetAllUsersQuery());
+
         return Ok(result);
     }
 
-    [HttpPut("{id}/suspend")]
+
+
+    [HttpPut("{id}/Suspend_User")]
     public async Task<IActionResult> Suspend(Guid id)
     {
         await _mediator.Send(new SuspendUserCommand(id));
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        await _mediator.Send(new DeleteUserCommand(id));
-        return NoContent();
-    }
 
 
-    [HttpPut("{id}/role")]
+    [HttpPut("{id}/Update_Role")]
     public async Task<IActionResult> ChangeRole(Guid id, ChangeUserRoleCommand command)
     {
         command.UserId = id;
@@ -51,4 +51,16 @@ public class AdminUsersController : ControllerBase
 
         return NoContent();
     }
+
+
+
+    [HttpDelete("{id}/Delete_User")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _mediator.Send(new DeleteUserCommand(id));
+        return NoContent();
+    }
+
+
+
 }

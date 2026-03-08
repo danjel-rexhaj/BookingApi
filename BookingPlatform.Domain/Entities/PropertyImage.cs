@@ -9,11 +9,9 @@ namespace BookingPlatform.Domain.Entities;
 public class PropertyImage
 {
     public Guid Id { get; private set; }
-
     public Guid PropertyId { get; private set; }
-    public Property Property { get; private set; } = null!;
-
-    public string ImageUrl { get; private set; } = null!;
+    public string ImageUrl { get; private set; }
+    public DateTime CreatedAt { get; private set; }
 
     private PropertyImage() { }
 
@@ -22,5 +20,6 @@ public class PropertyImage
         Id = Guid.NewGuid();
         PropertyId = propertyId;
         ImageUrl = imageUrl;
+        CreatedAt = DateTime.UtcNow;
     }
 }

@@ -39,6 +39,34 @@ public class PropertiesController : ControllerBase
 
 
 
+    [HttpPost("{id}/seasonal-price")]
+    [Authorize(Roles = "Owner")]
+    public async Task<IActionResult> AddSeasonalPrice(
+    Guid id,
+    [FromBody] AddSeasonalPriceCommand command)
+    {
+        var result = await _mediator.Send(
+            command with { PropertyId = id });
+
+        return Ok(result);
+    }
+
+
+
+
+    [HttpPost("{id}/block-date")]
+    [Authorize(Roles = "Owner")]
+    public async Task<IActionResult> BlockDate(
+    Guid id,
+    [FromBody] AddBlockedDateCommand command)
+    {
+        var result = await _mediator.Send(
+            command with { PropertyId = id });
+
+        return Ok(result);
+    }
+
+
 
 
     [Authorize(Roles = "Admin")]
@@ -75,38 +103,6 @@ public class PropertiesController : ControllerBase
 
 
 
-
-
-    [HttpPost("{id}/seasonal-price")]
-    [Authorize(Roles = "Owner")]
-    public async Task<IActionResult> AddSeasonalPrice(
-    Guid id,
-    [FromBody] AddSeasonalPriceCommand command)
-    {
-        var result = await _mediator.Send(
-            command with { PropertyId = id });
-
-        return Ok(result);
-    }
-
-
-
-
-    [HttpPost("{id}/block-date")]
-    [Authorize(Roles = "Owner")]
-    public async Task<IActionResult> BlockDate(
-    Guid id,
-    [FromBody] AddBlockedDateCommand command)
-    {
-        var result = await _mediator.Send(
-            command with { PropertyId = id });
-
-        return Ok(result);
-    }
-    
-
-
-
     [HttpPut("{id}/reject")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Reject(Guid id)
@@ -116,7 +112,7 @@ public class PropertiesController : ControllerBase
     }
 
 
-    [HttpPut("{id}")]
+    [HttpPut("{id}/update")]
     public async Task<IActionResult> UpdateProperty(
     Guid id,
     UpdatePropertyCommand command)

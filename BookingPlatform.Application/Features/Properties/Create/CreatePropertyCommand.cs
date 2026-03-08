@@ -23,5 +23,6 @@ public record CreatePropertyCommand(
     decimal AdditionalGuestFee,
     int? MinimumStay,
     int? MaximumStay,
-    List<string> Rules
+    List<string> Rules,
+    List<Guid> AmenityIds
 ) : IRequest<Guid>;

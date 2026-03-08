@@ -10,14 +10,17 @@ public class CreatePropertyHandler
     private readonly IPropertyRepository _repository;
     private readonly ICurrentUserService _currentUser;
     private readonly IPropertyRuleRepository _propertyRuleRepository;
+    private readonly IPropertyAmenityRepository _propertyAmenityRepository;
     public CreatePropertyHandler(
         IPropertyRepository repository,
         ICurrentUserService currentUser,
-        IPropertyRuleRepository propertyAmenityRepository)
+        IPropertyRuleRepository propertyRuleRepository,
+        IPropertyAmenityRepository propertyAmenityRepository)
     {
         _repository = repository;
         _currentUser = currentUser;
-        _propertyRuleRepository = propertyAmenityRepository;
+        _propertyRuleRepository = propertyRuleRepository;
+        _propertyAmenityRepository = propertyAmenityRepository;
     }
 
     public async Task<Guid> Handle(
@@ -38,6 +41,7 @@ public class CreatePropertyHandler
             request.BasePricePerNight
         );
 
+
         property.SetStayLimits(request.MinimumStay, request.MaximumStay);
 
         await _repository.AddAsync(property);
@@ -48,6 +52,16 @@ public class CreatePropertyHandler
 
             await _propertyRuleRepository.AddAsync(rule);
         }
+
+        foreach (var amenityId in request.AmenityIds)
+        {
+            var propertyAmenity = new PropertyAmenity(property.Id, amenityId);
+
+            await _propertyAmenityRepository.AddAsync(propertyAmenity);
+        }
+
+        await _propertyAmenityRepository.SaveChangesAsync();
+
 
         var notification = new Notification(
             property.OwnerId,

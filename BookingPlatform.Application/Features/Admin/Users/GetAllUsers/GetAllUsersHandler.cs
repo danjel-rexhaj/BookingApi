@@ -1,12 +1,6 @@
 ﻿using BookingPlatform.Application.Interfaces;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
-using MediatR;
+
 
 namespace BookingPlatform.Application.Features.Admin.Users.GetAllUsers
 {
@@ -32,7 +26,8 @@ public class GetAllUsersHandler
                 Email = u.Email,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
-                IsActive = u.IsActive
+                IsActive = u.IsActive,
+                Role = u.UserRoles.FirstOrDefault()?.Role?.Name
             }).ToList();
         }
     }
