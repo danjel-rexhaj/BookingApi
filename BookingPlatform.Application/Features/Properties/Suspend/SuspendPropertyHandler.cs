@@ -1,12 +1,13 @@
-﻿using System;
+﻿using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Domain.Entities;
+using MediatR;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediatR;
-using BookingPlatform.Application.Interfaces;
 
-namespace BookingPlatform.Application.Properties.Suspend;
+namespace BookingPlatform.Application.Features.Properties.Suspend;
 
 public class SuspendPropertyHandler
     : IRequestHandler<SuspendPropertyCommand>
@@ -30,6 +31,13 @@ public class SuspendPropertyHandler
         property.Suspend();
 
         await _repository.SaveChangesAsync();
+
+
+
+        var notification = new Notification(
+            property.OwnerId,
+            "Your property has been suspended.",
+            "PropertySuspended");
 
         return Unit.Value;
     }

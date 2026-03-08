@@ -4,6 +4,7 @@ using BookingPlatform.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookingPlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    partial class BookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260307234509_AddBasePricePerNight")]
+    partial class AddBasePricePerNight
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,21 +50,6 @@ namespace BookingPlatform.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Addresses");
-                });
-
-            modelBuilder.Entity("BookingPlatform.Domain.Entities.Amenity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Amenities");
                 });
 
             modelBuilder.Entity("BookingPlatform.Domain.Entities.BlockedDate", b =>
@@ -220,41 +208,6 @@ namespace BookingPlatform.Infrastructure.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("OwnerProfiles");
-                });
-
-            modelBuilder.Entity("BookingPlatform.Domain.Entities.PropertyAmenity", b =>
-                {
-                    b.Property<Guid>("PropertyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AmenityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("PropertyId", "AmenityId");
-
-                    b.HasIndex("AmenityId");
-
-                    b.ToTable("PropertyAmenities");
-                });
-
-            modelBuilder.Entity("BookingPlatform.Domain.Entities.PropertyRule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PropertyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RuleText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PropertyId");
-
-                    b.ToTable("PropertyRules");
                 });
 
             modelBuilder.Entity("BookingPlatform.Domain.Entities.Review", b =>
@@ -529,36 +482,6 @@ namespace BookingPlatform.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BookingPlatform.Domain.Entities.PropertyAmenity", b =>
-                {
-                    b.HasOne("BookingPlatform.Domain.Entities.Amenity", "Amenity")
-                        .WithMany()
-                        .HasForeignKey("AmenityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Property", "Property")
-                        .WithMany("Amenities")
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Amenity");
-
-                    b.Navigation("Property");
-                });
-
-            modelBuilder.Entity("BookingPlatform.Domain.Entities.PropertyRule", b =>
-                {
-                    b.HasOne("Property", "Property")
-                        .WithMany()
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Property");
-                });
-
             modelBuilder.Entity("BookingPlatform.Domain.Entities.Review", b =>
                 {
                     b.HasOne("BookingPlatform.Domain.Entities.Booking", "Booking")
@@ -633,8 +556,6 @@ namespace BookingPlatform.Infrastructure.Migrations
 
             modelBuilder.Entity("Property", b =>
                 {
-                    b.Navigation("Amenities");
-
                     b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618

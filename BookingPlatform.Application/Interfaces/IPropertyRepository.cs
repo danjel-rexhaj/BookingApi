@@ -14,12 +14,15 @@ public interface IPropertyRepository
     Task SaveChangesAsync();
 
     Task<List<Property>> SearchAsync(
+        string? country,
         string? city,
         int? guests,
         string? propertyType,
+        string? amenities,
+        string? rating,
+        string? price,
         DateTime? startDate,
         DateTime? endDate,
-        string? sortBy,
-        int page,
-        int pageSize);
+        string? sortBy);
 }
+

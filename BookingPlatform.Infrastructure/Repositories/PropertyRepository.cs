@@ -32,22 +32,29 @@ public class PropertyRepository : IPropertyRepository
     }
 
     public async Task<List<Property>> SearchAsync(
+        string? country,
         string? city,
         int? guests,
         string? propertyType,
+        string? amenities,
+        string? rating,
+        string? price,
         DateTime? startDate,
         DateTime? endDate,
-        string? sortBy,
-        int page,
-        int pageSize)
-    {
-        var query = _context.Properties
-            .Include(p => p.Address)
-            .Include(p => p.Bookings)
-            .Where(p => p.IsApproved && p.IsActive)
-            .AsQueryable();
+        string? sortBy)
+        {
+    var query = _context.Properties
+        .Include(p => p.Address)
+        .Include(p => p.Bookings)
+        .Include(p => p.Amenities)
+        .Where(p => p.IsApproved && p.IsActive)
+        .AsQueryable();
 
- 
+    
+        if (!string.IsNullOrWhiteSpace(country))
+            query = query.Where(p => p.Address.Country == country);
+
+
         if (!string.IsNullOrWhiteSpace(city))
             query = query.Where(p => p.Address.City == city);
 
@@ -55,11 +62,36 @@ public class PropertyRepository : IPropertyRepository
         if (guests.HasValue)
             query = query.Where(p => p.MaxGuests >= guests.Value);
 
-       
+
         if (!string.IsNullOrWhiteSpace(propertyType))
             query = query.Where(p => p.PropertyType == propertyType);
 
-       
+
+        if (!string.IsNullOrWhiteSpace(price))
+        {
+            var priceValue = decimal.Parse(price);
+            query = query.Where(p => p.BasePricePerNight <= priceValue);
+        }
+
+
+        if (!string.IsNullOrWhiteSpace(rating))
+        {
+            var ratingValue = double.Parse(rating);
+
+            query = query.Where(p =>
+                _context.Reviews
+                .Where(r => r.Booking.PropertyId == p.Id)
+                .Average(r => (double?)r.Rating) >= ratingValue);
+        }
+
+
+        if (!string.IsNullOrWhiteSpace(amenities))
+        {
+            query = query.Where(p =>
+                p.Amenities.Any(a => a.Amenity.Name == amenities));
+        }
+
+
         if (startDate.HasValue && endDate.HasValue)
         {
             var start = startDate.Value;
@@ -71,21 +103,32 @@ public class PropertyRepository : IPropertyRepository
                     b.StartDate < end &&
                     b.EndDate > start));
         }
-  
-        
+
+
         if (!string.IsNullOrWhiteSpace(sortBy))
         {
+            switch (sortBy.ToLower())
+            {
+                case "price":
+                    query = query.OrderBy(p => p.BasePricePerNight);
+                    break;
 
-            query = query.OrderBy(p => p.Name);
+                case "rating":
+                    query = query.OrderByDescending(p =>
+                        _context.Reviews
+                            .Where(r => r.Booking.PropertyId == p.Id)
+                            .Average(r => (double?)r.Rating) ?? 0);
+                    break;
+
+                case "popularity":
+                    query = query.OrderByDescending(p => p.Bookings.Count);
+                    break;
+
+                default:
+                    query = query.OrderBy(p => p.Name);
+                    break;
+            }
         }
-
-        
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 10;
-
-        query = query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize);
 
         return await query.ToListAsync();
     }

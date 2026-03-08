@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediatR;
+
 
 namespace BookingPlatform.Application.Features.Properties.Create;
 
@@ -16,10 +16,12 @@ public record CreatePropertyCommand(
     int MaxGuests,
     TimeSpan CheckInTime,
     TimeSpan CheckOutTime,
-
     decimal BasePricePerNight,
     decimal CleaningFee,
     decimal ServiceFee,
     decimal TaxPercentage,
-    decimal AdditionalGuestFee
+    decimal AdditionalGuestFee,
+    int? MinimumStay,
+    int? MaximumStay,
+    List<string> Rules
 ) : IRequest<Guid>;

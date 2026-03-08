@@ -8,14 +8,6 @@ public class Role
 
     public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
 
-    private Role() { }
-
-    public Role(string name, string? description = null)
-    {
-        Id = Guid.NewGuid();
-        Name = name;
-        Description = description;
-    }
 
     public Role(Guid id, string name, string? description = null)
     {

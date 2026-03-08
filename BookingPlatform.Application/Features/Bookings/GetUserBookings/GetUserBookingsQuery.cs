@@ -7,5 +7,10 @@ using MediatR;
 
 namespace BookingPlatform.Application.Features.Bookings.GetUserBookings;
 
-public record GetUserBookingsQuery(Guid UserId)
-    : IRequest<List<GetUserBookingsResponse>>;
+using BookingPlatform.Domain.Enums;
+using MediatR;
+
+public record GetUserBookingsQuery(
+    Guid UserId,
+    BookingStatus? Status
+) : IRequest<List<GetUserBookingsResponse>>;

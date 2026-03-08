@@ -26,7 +26,7 @@ public static class InfrastructureRegistration
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddHttpContextAccessor();
         services.AddScoped<IBookingRepository, BookingRepository>();
-
+        services.AddScoped<IPropertyRuleRepository, PropertyRuleRepository>();
         return services;
     }
 }

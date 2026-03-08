@@ -4,6 +4,7 @@ using BookingPlatform.Application.Features.Bookings.Confirm;
 using BookingPlatform.Application.Features.Bookings.Create;
 using BookingPlatform.Application.Features.Bookings.GetUserBookings;
 using BookingPlatform.Application.Features.Bookings.Reject;
+using BookingPlatform.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,9 +29,10 @@ public class BookingsController : ControllerBase
         return Ok(id);
     }
 
+
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> GetUserBookings()
+    public async Task<IActionResult> GetUserBookings([FromQuery] BookingStatus? status)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -38,7 +40,7 @@ public class BookingsController : ControllerBase
             return Unauthorized();
 
         var result = await _mediator.Send(
-            new GetUserBookingsQuery(Guid.Parse(userId)));
+            new GetUserBookingsQuery(Guid.Parse(userId), status));
 
         return Ok(result);
     }

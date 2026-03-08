@@ -7,7 +7,7 @@ using MediatR;
 using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
 
-namespace BookingPlatform.Application.Properties.Approve
+namespace BookingPlatform.Application.Features.Properties.Approve
 {
     public class ApprovePropertyHandler : IRequestHandler<ApprovePropertyCommand>
     {
@@ -28,6 +28,11 @@ namespace BookingPlatform.Application.Properties.Approve
             property.Approve();   
 
             await _repository.SaveChangesAsync();
+
+            var notification = new Notification(
+                property.OwnerId,
+                "Your property has been approved.",
+                "PropertyApproved");
 
             return Unit.Value;
         }

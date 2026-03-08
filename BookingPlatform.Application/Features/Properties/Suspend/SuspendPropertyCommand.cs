@@ -5,6 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MediatR;
 
-namespace BookingPlatform.Application.Properties.Suspend;
+namespace BookingPlatform.Application.Features.Properties.Suspend;
 
 public record SuspendPropertyCommand(Guid PropertyId) : IRequest;

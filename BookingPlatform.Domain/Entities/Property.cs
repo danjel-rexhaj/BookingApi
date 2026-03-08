@@ -1,4 +1,5 @@
 ﻿using BookingPlatform.Domain.Entities;
+using System.Net.NetworkInformation;
 
 public class Property
 {
@@ -30,21 +31,21 @@ public class Property
 
 
 
+
     public int? MinimumStay { get; private set; }
     public int? MaximumStay { get; private set; }
-
+    /*
     public decimal? DiscountPercentage { get; private set; }
     public DateTime? DiscountValidFrom { get; private set; }
     public DateTime? DiscountValidTo { get; private set; }
+    */
+    public decimal BasePricePerNight { get; set; }
 
-
-
-
-    private Property() { }
+    public ICollection<PropertyAmenity> Amenities { get; private set; }
 
     public Property(Guid ownerId, Guid addressId, string name,
                     string description, string propertyType, int maxGuests,
-                    TimeSpan checkInTime, TimeSpan checkOutTime)
+                    TimeSpan checkInTime, TimeSpan checkOutTime, decimal basePricePerNight)
     {
         Id = Guid.NewGuid();
         OwnerId = ownerId;
@@ -55,6 +56,7 @@ public class Property
         MaxGuests = maxGuests;
         CheckInTime = checkInTime;
         CheckOutTime = checkOutTime;
+        BasePricePerNight = basePricePerNight;
 
         IsActive = true;
         IsApproved = false;
@@ -73,4 +75,52 @@ public class Property
         IsActive = false;
         LastModifiedAt = DateTime.UtcNow;
     }
+
+    public void Reject()
+    {
+        IsApproved = false;
+        IsActive = false;
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
+
+    public void SetStayLimits(int? minimumStay, int? maximumStay)
+    {
+        MinimumStay = minimumStay;
+        MaximumStay = maximumStay;
+    }
+
+
+    public void UpdateDetails(
+        string name,
+        string description,
+        string propertyType,
+        int maxGuests,
+        decimal basePricePerNight,
+        TimeSpan checkInTime,
+        TimeSpan checkOutTime)
+    {
+        Name = name;
+        Description = description;
+        PropertyType = propertyType;
+        MaxGuests = maxGuests;
+        BasePricePerNight = basePricePerNight;
+        CheckInTime = checkInTime;
+        CheckOutTime = checkOutTime;
+
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateAmenities(List<Guid> amenityIds)
+    {
+        Amenities.Clear();
+
+        foreach (var amenityId in amenityIds)
+        {
+            Amenities.Add(new PropertyAmenity(Id, amenityId));
+        }
+
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
 }

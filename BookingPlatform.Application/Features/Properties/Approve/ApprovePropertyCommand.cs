@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediatR;
 
-namespace BookingPlatform.Application.Properties.Approve
+namespace BookingPlatform.Application.Features.Properties.Approve
 {
     public record ApprovePropertyCommand(Guid PropertyId) : IRequest;
 }

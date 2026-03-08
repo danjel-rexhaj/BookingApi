@@ -14,4 +14,5 @@ public class GetUserBookingsResponse
     public string Status { get; set; } = string.Empty;
     public decimal TotalPrice { get; set; }
     public decimal? RefundAmount { get; set; }
+    public decimal TaxAmount { get; set; }
 }

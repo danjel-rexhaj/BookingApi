@@ -10,7 +10,6 @@ public class UserRole
 
     public DateTime AssignedAt { get; private set; }
 
-    private UserRole() { }
 
     public UserRole(Guid userId, Guid roleId, DateTime assignedAt)
     {

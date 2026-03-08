@@ -33,7 +33,7 @@ public class Booking
     public DateTime? CompletedOnUtc { get; private set; }
     public DateTime? CancelledOnUtc { get; private set; }
 
-
+    public decimal TaxAmount { get; private set; }
     private Booking() { }
 
     public Booking(Guid propertyId, Guid guestId, DateTime startDate, DateTime endDate, int guestCount)
@@ -52,14 +52,16 @@ public class Booking
 
 
     public void SetPricing(
-    decimal cleaningFee,
-    decimal amenitiesUpCharge,
-    decimal priceForPeriod,
-    decimal totalPrice)
+        decimal cleaningFee,
+        decimal amenitiesUpCharge,
+        decimal priceForPeriod,
+        decimal taxAmount,
+        decimal totalPrice)
     {
         CleaningFee = cleaningFee;
         AmenitiesUpCharge = amenitiesUpCharge;
         PriceForPeriod = priceForPeriod;
+        TaxAmount = taxAmount;
         TotalPrice = totalPrice;
     }
 

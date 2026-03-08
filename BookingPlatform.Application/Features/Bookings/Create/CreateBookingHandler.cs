@@ -82,12 +82,7 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
         }
 
         //  Base price default
-        decimal basePricePerNight = property.PropertyType switch
-        {
-            "Apartment" => 50m,
-            "Hotel" => 80m,
-            _ => 60m
-        };
+        decimal basePricePerNight = property.BasePricePerNight;
 
         // Seasonal pricing override
         var seasonalPrices = await _seasonalPriceRepository
@@ -120,15 +115,15 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
         //  Subtotal
         decimal subtotal = priceForPeriod + amenitiesUpCharge + cleaningFee;
 
-        //  Discount logic
+        /*  Discount logic
         if (property.DiscountPercentage.HasValue &&
             property.DiscountValidFrom.HasValue &&
             property.DiscountValidTo.HasValue)
         {
-            var today = DateTime.UtcNow.Date;
+            var bookingDate = request.StartDate.Date;
 
-            if (today >= property.DiscountValidFrom.Value &&
-                today <= property.DiscountValidTo.Value)
+            if (bookingDate >= property.DiscountValidFrom.Value &&
+                bookingDate <= property.DiscountValidTo.Value)
             {
                 var discountAmount = subtotal *
                     (property.DiscountPercentage.Value / 100m);
@@ -136,9 +131,16 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
                 subtotal -= discountAmount;
             }
         }
+        */
+        // Final subtotal after discount
+        decimal subtotalAfterDiscount = subtotal;
 
-        //  Final total
-        decimal totalPrice = subtotal;
+        // Tax calculation (10% example)
+        decimal taxAmount = subtotalAfterDiscount * 0.10m;
+
+        // Final total
+        decimal totalPrice = subtotalAfterDiscount + taxAmount;
+
 
         var newBooking = new Booking(
             request.PropertyId,
@@ -152,6 +154,7 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
             cleaningFee,
             amenitiesUpCharge,
             priceForPeriod,
+            taxAmount,
             totalPrice
         );
 

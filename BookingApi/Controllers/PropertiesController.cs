@@ -1,9 +1,11 @@
-﻿using BookingPlatform.Application.Features.Properties.BlockDate;
+﻿using BookingPlatform.Application.Features.Properties.Approve;
+using BookingPlatform.Application.Features.Properties.BlockDate;
 using BookingPlatform.Application.Features.Properties.Create;
+using BookingPlatform.Application.Features.Properties.Reject;
+using BookingPlatform.Application.Features.Properties.Search;
 using BookingPlatform.Application.Features.Properties.SeasonalPrice;
-using BookingPlatform.Application.Properties.Approve;
-using BookingPlatform.Application.Properties.Search;
-using BookingPlatform.Application.Properties.Suspend;
+using BookingPlatform.Application.Features.Properties.Suspend;
+using BookingPlatform.Application.Features.Properties.Update;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,10 +18,16 @@ public class PropertiesController : ControllerBase
 {
     private readonly IMediator _mediator;
 
+
+
+
     public PropertiesController(IMediator mediator)
     {
         _mediator = mediator;
     }
+
+
+
 
     [Authorize(Roles = "Owner,Admin")]
     [HttpPost]
@@ -29,6 +37,10 @@ public class PropertiesController : ControllerBase
         return Ok(id);
     }
 
+
+
+
+
     [Authorize(Roles = "Admin")]
     [HttpPut("{id}/approve")]
     public async Task<IActionResult> Approve(Guid id)
@@ -36,6 +48,9 @@ public class PropertiesController : ControllerBase
         await _mediator.Send(new ApprovePropertyCommand(id));
         return NoContent();
     }
+
+
+
 
     [AllowAnonymous]
     [HttpGet]
@@ -46,6 +61,9 @@ public class PropertiesController : ControllerBase
     }
 
 
+
+
+
     [HttpPut("{id}/suspend")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Suspend(Guid id)
@@ -53,6 +71,9 @@ public class PropertiesController : ControllerBase
         await _mediator.Send(new SuspendPropertyCommand(id));
         return NoContent();
     }
+
+
+
 
 
 
@@ -68,6 +89,9 @@ public class PropertiesController : ControllerBase
         return Ok(result);
     }
 
+
+
+
     [HttpPost("{id}/block-date")]
     [Authorize(Roles = "Owner")]
     public async Task<IActionResult> BlockDate(
@@ -78,6 +102,31 @@ public class PropertiesController : ControllerBase
             command with { PropertyId = id });
 
         return Ok(result);
+    }
+    
+
+
+
+    [HttpPut("{id}/reject")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Reject(Guid id)
+    {
+        await _mediator.Send(new RejectPropertyCommand(id));
+        return NoContent();
+    }
+
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateProperty(
+    Guid id,
+    UpdatePropertyCommand command)
+    {
+        if (id != command.PropertyId)
+            return BadRequest();
+
+        await _mediator.Send(command);
+
+        return NoContent();
     }
 
 }

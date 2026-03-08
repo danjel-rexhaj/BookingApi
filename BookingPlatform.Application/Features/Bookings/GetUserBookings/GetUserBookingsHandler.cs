@@ -25,6 +25,13 @@ public class GetUserBookingsHandler
         var bookings = await _bookingRepository
             .GetBookingsForUserAsync(request.UserId);
 
+        if (request.Status.HasValue)
+        {
+            bookings = bookings
+                .Where(b => b.BookingStatus == request.Status.Value)
+                .ToList();
+        }
+
         return bookings.Select(b => new GetUserBookingsResponse
         {
             Id = b.Id,
@@ -33,7 +40,8 @@ public class GetUserBookingsHandler
             EndDate = b.EndDate,
             Status = b.BookingStatus.ToString(),
             TotalPrice = b.TotalPrice,
-            RefundAmount = b.RefundAmount
+            RefundAmount = b.RefundAmount,
+            TaxAmount = b.TaxAmount
         }).ToList();
     }
 }

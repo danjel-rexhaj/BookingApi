@@ -1,4 +1,5 @@
-﻿using BookingPlatform.Domain.Entities;
+﻿using BookingPlatform.Infrastructure.Persistence;
+using BookingPlatform.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +24,7 @@ public class BookingDbContext : DbContext
     public DbSet<Address> Addresses => Set<Address>();
     public DbSet<Property> Properties => Set<Property>();
 
-
+    public DbSet<PropertyRule> PropertyRules => Set<PropertyRule>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Review> Reviews => Set<Review>();
 
@@ -32,6 +33,10 @@ public class BookingDbContext : DbContext
     public DbSet<Notification> Notifications => Set<Notification>();
 
     public DbSet<BlockedDate> BlockedDates => Set<BlockedDate>();
+
+    public DbSet<PropertyAmenity> PropertyAmenities => Set<PropertyAmenity>();
+    public DbSet<Amenity> Amenities => Set<Amenity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -172,6 +177,57 @@ public class BookingDbContext : DbContext
             .HasForeignKey(n => n.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.PriceForPeriod)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.CleaningFee)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.AmenitiesUpCharge)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.TotalPrice)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.RefundAmount)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.TaxAmount)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<SeasonalPrice>()
+            .Property(s => s.PricePerNight)
+            .HasPrecision(18, 2);
+        /*
+        modelBuilder.Entity<Property>()
+            .Property(p => p.DiscountPercentage)
+            .HasPrecision(5, 2);
+        */
+
+        modelBuilder.Entity<Property>()
+            .Property(p => p.BasePricePerNight)
+            .HasPrecision(18, 2);
+
+
+        modelBuilder.Entity<PropertyAmenity>()
+    .HasKey(pa => new { pa.PropertyId, pa.AmenityId });
+
+        modelBuilder.Entity<PropertyAmenity>()
+            .HasOne(pa => pa.Property)
+            .WithMany(p => p.Amenities)
+            .HasForeignKey(pa => pa.PropertyId);
+
+        modelBuilder.Entity<PropertyAmenity>()
+            .HasOne(pa => pa.Amenity)
+            .WithMany()
+            .HasForeignKey(pa => pa.AmenityId);
 
     }
 

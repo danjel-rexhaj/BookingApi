@@ -1,7 +1,8 @@
 ﻿using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Domain.Entities;
 using MediatR;
 
-namespace BookingPlatform.Application.Properties.Search;
+namespace BookingPlatform.Application.Features.Properties.Search;
 
 public class GetPropertiesHandler
     : IRequestHandler<GetPropertiesQuery, List<PropertyDto>>
@@ -22,38 +23,48 @@ public class GetPropertiesHandler
         CancellationToken cancellationToken)
     {
         var properties = await _repository.SearchAsync(
+            request.Country,
             request.City,
             request.Guests,
             request.PropertyType,
+            request.Amaneties,
+            request.Rating,
+            request.Price,
             request.StartDate,
             request.EndDate,
-            request.SortBy,
-            request.Page,
-            request.PageSize);
+            request.SortBy
+        );
 
         var result = new List<PropertyDto>();
 
-        foreach (var p in properties)
+        foreach (var property in properties)
         {
             var reviews = await _reviewRepository
-                .GetReviewsForPropertyAsync(p.Id);
+                .GetReviewsForPropertyAsync(property.Id);
 
-            var averageRating = reviews.Any()
-                ? reviews.Average(r => r.Rating)
-                : 0;
+            double averageRating = 0;
+            int totalReviews = 0;
 
-            var totalReviews = reviews.Count;
+            if (reviews.Any())
+            {
+                averageRating = reviews.Average(r => r.Rating);
+                totalReviews = reviews.Count;
+            }
 
-            result.Add(new PropertyDto(
-                p.Id,
-                p.Name,
-                p.Description,
-                p.Address.City,
-                p.MaxGuests,
-                p.PropertyType,
+            var dto = new PropertyDto(
+                property.Id,
+                property.Address.Country,
+                property.Address.City,
+                property.Name,
+                property.Description,
+                property.MaxGuests,
+                property.PropertyType,
+                property.BasePricePerNight,
                 averageRating,
                 totalReviews
-            ));
+            );
+
+            result.Add(dto);
         }
 
         return result;
