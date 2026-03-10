@@ -1,11 +1,12 @@
-﻿using System;
+﻿using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Domain.Entities;
+using BookingPlatform.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
-using BookingPlatform.Domain.Entities;
-using BookingPlatform.Infrastructure.Persistence;
 
 public class PropertyRuleRepository : IPropertyRuleRepository
 {
@@ -18,7 +19,22 @@ public class PropertyRuleRepository : IPropertyRuleRepository
 
     public async Task AddAsync(PropertyRule rule)
     {
-        await _context.Set<PropertyRule>().AddAsync(rule);
-        await _context.SaveChangesAsync();
+        await _context.PropertyRules.AddAsync(rule);
+    }
+
+    public async Task DeleteByPropertyIdAsync(Guid propertyId)
+    {
+        var rules = await _context.PropertyRules
+            .Where(r => r.PropertyId == propertyId)
+            .ToListAsync();
+
+        _context.PropertyRules.RemoveRange(rules);
+    }
+
+    public async Task<List<PropertyRule>> GetByPropertyIdAsync(Guid propertyId)
+    {
+        return await _context.PropertyRules
+            .Where(r => r.PropertyId == propertyId)
+            .ToListAsync();
     }
 }

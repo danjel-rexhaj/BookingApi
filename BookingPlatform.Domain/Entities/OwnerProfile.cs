@@ -6,10 +6,14 @@ namespace BookingPlatform.Domain.Entities
     {
         public Guid UserId { get; private set; }
 
-        public string IdentityCardNumber { get; private set; }
-       
-        public string BusinessName { get; private set; }
-        public string CreditCard { get; private set; }
+        public string BusinessName { get; set; } = string.Empty;
+        public string IdentityCardNumber { get; set; } = string.Empty;
+        public string CreditCard { get; set; } = string.Empty;
+
+        public string? ImageUrl { get; set; }
+
+        public List<Amenity> Amenities { get; set; } = new();
+
         public User User { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; }
         public DateTime? LastModifiedAt { get; private set; }

@@ -1,38 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Domain.Entities;
 using MediatR;
 
+namespace BookingPlatform.Application.Features.Admin.Users.DeleteUser;
 
-
-namespace BookingPlatform.Application.Features.Admin.Users.DeleteUser
+public class DeleteUserHandler
+    : IRequestHandler<DeleteUserCommand, Unit>
 {
-    public class DeleteUserHandler
-        : IRequestHandler<DeleteUserCommand>
+    private readonly IUserRepository _userRepository;
+    private readonly INotificationRepository _notificationRepository;
+
+    public DeleteUserHandler(
+        IUserRepository userRepository,
+        INotificationRepository notificationRepository)
     {
-        private readonly IUserRepository _userRepository;
+        _userRepository = userRepository;
+        _notificationRepository = notificationRepository;
+    }
 
-        public DeleteUserHandler(IUserRepository userRepository)
-        {
-            _userRepository = userRepository;
-        }
+    public async Task<Unit> Handle(
+        DeleteUserCommand request,
+        CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetByIdAsync(request.UserId);
 
-        public async Task<Unit> Handle(
-            DeleteUserCommand request,
-            CancellationToken cancellationToken)
-        {
-            var user = await _userRepository.GetByIdAsync(request.UserId);
+        if (user == null)
+            throw new Exception("User not found");
 
-            if (user == null)
-                throw new Exception("User not found");
+        var notification = new Notification(
+            user.Id,
+            "Your account has been deleted by the administrator.",
+            "UserDeleted"
+        );
 
-            await _userRepository.DeleteAsync(user);
-            await _userRepository.SaveChangesAsync();
+        await _notificationRepository.AddAsync(notification);
 
-            return Unit.Value;
-        }
+        await _userRepository.DeleteAsync(user);
+        await _userRepository.SaveChangesAsync();
+
+        return Unit.Value;
     }
 }

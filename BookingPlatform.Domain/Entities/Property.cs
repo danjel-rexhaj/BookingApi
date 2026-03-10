@@ -41,7 +41,7 @@ public class Property
     */
     public decimal BasePricePerNight { get; set; }
 
-    public ICollection<PropertyAmenity> Amenities { get; private set; }
+    public ICollection<PropertyAmenity> Amenities { get; private set; } = new List<PropertyAmenity>();
 
     public Property(Guid ownerId, Guid addressId, string name,
                     string description, string propertyType, int maxGuests,

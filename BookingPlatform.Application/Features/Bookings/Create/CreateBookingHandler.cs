@@ -3,6 +3,7 @@ using BookingPlatform.Domain.Entities;
 using BookingPlatform.Domain.Enums;
 using MediatR;
 
+
 namespace BookingPlatform.Application.Features.Bookings.Create;
 
 public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
@@ -12,19 +13,25 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
     private readonly ICurrentUserService _currentUserService;
     private readonly IBlockedDateRepository _blockedDateRepository;
     private readonly ISeasonalPriceRepository _seasonalPriceRepository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly INotificationService _notificationService;
     public CreateBookingHandler(
-        IBookingRepository bookingRepository,
-        IPropertyRepository propertyRepository,
-        ICurrentUserService currentUserService,
-        IBlockedDateRepository blockedDateRepository,
-        ISeasonalPriceRepository seasonalPriceRepository)
-    {
-        _bookingRepository = bookingRepository;
-        _propertyRepository = propertyRepository;
-        _currentUserService = currentUserService;
-        _blockedDateRepository = blockedDateRepository;
-        _seasonalPriceRepository = seasonalPriceRepository;
-    }
+    IBookingRepository bookingRepository,
+    IPropertyRepository propertyRepository,
+    ICurrentUserService currentUserService,
+    IBlockedDateRepository blockedDateRepository,
+    ISeasonalPriceRepository seasonalPriceRepository,
+    INotificationRepository notificationRepository,
+    INotificationService notificationService)
+{
+    _bookingRepository = bookingRepository;
+    _propertyRepository = propertyRepository;
+    _currentUserService = currentUserService;
+    _blockedDateRepository = blockedDateRepository;
+    _seasonalPriceRepository = seasonalPriceRepository;
+    _notificationRepository = notificationRepository;
+    _notificationService = notificationService;
+}
 
     public async Task<Guid> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
     {
@@ -158,9 +165,19 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
             totalPrice
         );
 
-        await _bookingRepository.AddAsync(newBooking);
-        await _bookingRepository.SaveChangesAsync();
+        var notification = new Notification(
+            newBooking.GuestId,
+            "Your booking has been created.",
+            "BookingCreated");
 
+        await _bookingRepository.AddAsync(newBooking);
+        await _notificationRepository.AddAsync(notification);
+
+        await _bookingRepository.SaveChangesAsync();
+        await _notificationService.SendNotificationAsync(
+            newBooking.GuestId,
+            "Your booking has been created."
+        );
         return newBooking.Id;
     }
 }

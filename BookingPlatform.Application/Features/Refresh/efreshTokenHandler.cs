@@ -1,4 +1,5 @@
-﻿using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Features.Auth;
+using BookingPlatform.Application.Interfaces;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,12 @@ namespace BookingPlatform.Application.Features.Refresh
 
             var user = await _userRepository.GetByIdAsync(userId.Value);
 
-            var roles = user.UserRoles.Select(r => r.Role.Name);
+            if (user == null)
+                throw new Exception("User not found");
+
+            var roles = user.UserRoles
+                .Where(r => r.Role != null)
+                .Select(r => r.Role!.Name);
 
             var newAccessToken = _jwtService.GenerateToken(user, roles);
             var newRefreshToken = _jwtService.GenerateRefreshToken(user.Id);

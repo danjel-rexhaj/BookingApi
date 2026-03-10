@@ -7,7 +7,7 @@ namespace BookingPlatform.Application.Features.OwnerProfiles.Get;
 
 public class OwnerProfileDto
 {
-    public string IdentityCardNumber { get; set; }
-    public string BusinessName { get; set; }
-    public string CreditCard { get; set; }
+    public required string IdentityCardNumber { get; set; }
+    public required string BusinessName { get; set; }
+    public required string CreditCard { get; set; }
 }

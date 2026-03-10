@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Domain.Entities;
 using MediatR;
 
 namespace BookingPlatform.Application.Features.Addresses.Update
@@ -12,10 +8,17 @@ namespace BookingPlatform.Application.Features.Addresses.Update
         : IRequestHandler<UpdateAddressCommand, Unit>
     {
         private readonly IAddressRepository _repository;
+        private readonly INotificationRepository _notificationRepository;
+        private readonly ICurrentUserService _currentUser;
 
-        public UpdateAddressHandler(IAddressRepository repository)
+        public UpdateAddressHandler(
+            IAddressRepository repository,
+            INotificationRepository notificationRepository,
+            ICurrentUserService currentUser)
         {
             _repository = repository;
+            _notificationRepository = notificationRepository;
+            _currentUser = currentUser;
         }
 
         public async Task<Unit> Handle(
@@ -33,6 +36,14 @@ namespace BookingPlatform.Application.Features.Addresses.Update
                 request.Street,
                 request.PostalCode
             );
+
+            var notification = new Notification(
+                _currentUser.UserId,
+                $"Address in {request.City}, {request.Country} has been updated.",
+                "AddressUpdated"
+            );
+
+            await _notificationRepository.AddAsync(notification);
 
             await _repository.SaveChangesAsync();
 

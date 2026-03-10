@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Domain.Entities;
 using MediatR;
 
 namespace BookingPlatform.Application.Features.Profile.UpdateProfileImage;
@@ -13,13 +9,16 @@ public class UpdateProfileImageHandler
 {
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUserService _currentUser;
+    private readonly INotificationRepository _notificationRepository;
 
     public UpdateProfileImageHandler(
         IUserRepository userRepository,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        INotificationRepository notificationRepository)
     {
         _userRepository = userRepository;
         _currentUser = currentUser;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<Unit> Handle(
@@ -33,6 +32,13 @@ public class UpdateProfileImageHandler
             throw new Exception("User not found");
 
         user.UpdateProfileImage(request.ImageUrl);
+
+        var notification = new Notification(
+            user.Id,
+            "Your profile image has been updated.",
+            "ProfileImageUpdated");
+
+        await _notificationRepository.AddAsync(notification);
 
         await _userRepository.SaveChangesAsync();
 

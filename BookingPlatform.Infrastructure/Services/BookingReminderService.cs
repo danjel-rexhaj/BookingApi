@@ -5,44 +5,48 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-public class BookingReminderService : BackgroundService
+namespace BookingPlatform.Infrastructure.services
 {
-    private readonly IServiceProvider _serviceProvider;
 
-    public BookingReminderService(IServiceProvider serviceProvider)
+    public class BookingReminderService : BackgroundService
     {
-        _serviceProvider = serviceProvider;
-    }
+        private readonly IServiceProvider _serviceProvider;
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
+        public BookingReminderService(IServiceProvider serviceProvider)
         {
-            using var scope = _serviceProvider.CreateScope();
+            _serviceProvider = serviceProvider;
+        }
 
-            var context = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
-
-            var tomorrow = DateTime.UtcNow.Date.AddDays(1);
-
-            var bookings = await context.Bookings
-                .Where(b => b.BookingStatus == BookingStatus.Confirmed &&
-                            b.StartDate.Date == tomorrow)
-                .ToListAsync();
-
-            foreach (var booking in bookings)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
             {
-                var notification = new Notification(
-                    booking.GuestId,
-                    "Booking Reminder",
-                    $"Reminder: Your stay starts tomorrow."
-                );
+                using var scope = _serviceProvider.CreateScope();
 
-                context.Notifications.Add(notification);
+                var context = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
+
+                var tomorrow = DateTime.UtcNow.Date.AddDays(1);
+
+                var bookings = await context.Bookings
+                    .Where(b => b.BookingStatus == BookingStatus.Confirmed &&
+                                b.StartDate.Date == tomorrow)
+                    .ToListAsync(stoppingToken);
+
+                foreach (var booking in bookings)
+                {
+                    var notification = new Notification(
+                        booking.GuestId,
+                        "Booking Reminder",
+                        $"Reminder: Your stay starts tomorrow."
+                    );
+
+                    context.Notifications.Add(notification);
+                }
+
+                await context.SaveChangesAsync(stoppingToken);
+
+                await Task.Delay(TimeSpan.FromHours(12), stoppingToken);
             }
-
-            await context.SaveChangesAsync();
-
-            await Task.Delay(TimeSpan.FromHours(12), stoppingToken);
         }
     }
 }

@@ -30,6 +30,8 @@ public class PropertyRepository : IPropertyRepository
     {
         await _context.SaveChangesAsync();
     }
+    // dependency injection of BookingDbContext and other repositories if needed
+    //service lifetime is typically scoped for repositories in web applications, meaning a new instance is created per request. This allows for efficient resource management and ensures that the same context is used throughout the request lifecycle, which is important for maintaining data consistency and managing transactions effectively.
 
     public async Task<List<Property>> SearchAsync(
         string? country,

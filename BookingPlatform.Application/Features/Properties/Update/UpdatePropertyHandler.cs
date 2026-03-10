@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace BookingPlatform.Application.Features.Properties.Update
 {
     using BookingPlatform.Application.Interfaces;
+    using BookingPlatform.Domain.Entities;
     using MediatR;
 
     public class UpdatePropertyHandler
@@ -16,10 +17,14 @@ namespace BookingPlatform.Application.Features.Properties.Update
     {
         private readonly IPropertyRepository _repository;
         private readonly IPropertyRuleRepository _propertyRuleRepository;
-        public UpdatePropertyHandler(IPropertyRepository repository, IPropertyRuleRepository propertyAmenityRepository)
+        private readonly INotificationRepository _notificationRepository;
+        public UpdatePropertyHandler(IPropertyRepository repository, 
+            IPropertyRuleRepository propertyAmenityRepository, 
+            INotificationRepository notificationRepository)
         {
             _repository = repository;
             _propertyRuleRepository = propertyAmenityRepository;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<Unit> Handle(UpdatePropertyCommand request, CancellationToken cancellationToken)
@@ -43,8 +48,24 @@ namespace BookingPlatform.Application.Features.Properties.Update
                 request.MinimumStay,
                 request.MaximumStay
             );
+            // update rules
+            await _propertyRuleRepository.DeleteByPropertyIdAsync(property.Id);
 
+            foreach (var rule in request.Rules)
+            {
+                var propertyRule = new PropertyRule(property.Id, rule);
+                await _propertyRuleRepository.AddAsync(propertyRule);
+            }
             await _repository.SaveChangesAsync();
+
+            var notification = new Notification(
+                property.OwnerId,
+                "Your property has been updated.",
+                "PropertyUpdated");
+
+            await _notificationRepository.AddAsync(notification);
+            await _repository.SaveChangesAsync();
+
 
             return Unit.Value;
         }

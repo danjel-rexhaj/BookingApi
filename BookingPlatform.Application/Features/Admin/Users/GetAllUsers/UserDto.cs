@@ -12,5 +12,5 @@ public class UserDto
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
     public bool IsActive { get; set; }
-    public string Role { get; set; } = null!;
+    public string? Role { get; set; }
 }

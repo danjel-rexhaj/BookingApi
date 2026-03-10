@@ -12,10 +12,11 @@ namespace BookingPlatform.Application.Features.Properties.Approve
     public class ApprovePropertyHandler : IRequestHandler<ApprovePropertyCommand>
     {
         private readonly IPropertyRepository _repository;
-
-        public ApprovePropertyHandler(IPropertyRepository repository)
+        private readonly INotificationRepository _notificationRepository;
+        public ApprovePropertyHandler(IPropertyRepository repository, INotificationRepository notificationRepository)
         {
             _repository = repository;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<Unit> Handle(ApprovePropertyCommand request, CancellationToken cancellationToken)
@@ -27,12 +28,13 @@ namespace BookingPlatform.Application.Features.Properties.Approve
 
             property.Approve();   
 
-            await _repository.SaveChangesAsync();
-
             var notification = new Notification(
                 property.OwnerId,
                 "Your property has been approved.",
                 "PropertyApproved");
+
+            await _notificationRepository.AddAsync(notification);
+            await _repository.SaveChangesAsync();
 
             return Unit.Value;
         }

@@ -11,16 +11,19 @@ public class CreatePropertyHandler
     private readonly ICurrentUserService _currentUser;
     private readonly IPropertyRuleRepository _propertyRuleRepository;
     private readonly IPropertyAmenityRepository _propertyAmenityRepository;
+    private readonly INotificationRepository _notificationRepository;
     public CreatePropertyHandler(
         IPropertyRepository repository,
         ICurrentUserService currentUser,
         IPropertyRuleRepository propertyRuleRepository,
-        IPropertyAmenityRepository propertyAmenityRepository)
+        IPropertyAmenityRepository propertyAmenityRepository,
+        INotificationRepository notificationRepository)
     {
         _repository = repository;
         _currentUser = currentUser;
         _propertyRuleRepository = propertyRuleRepository;
         _propertyAmenityRepository = propertyAmenityRepository;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<Guid> Handle(
@@ -60,13 +63,14 @@ public class CreatePropertyHandler
             await _propertyAmenityRepository.AddAsync(propertyAmenity);
         }
 
-        await _propertyAmenityRepository.SaveChangesAsync();
-
 
         var notification = new Notification(
             property.OwnerId,
             "Your property has been created.",
             "PropertyCreated");
+
+        await _notificationRepository.AddAsync(notification);
+        await _repository.SaveChangesAsync();
 
         return property.Id;
     }

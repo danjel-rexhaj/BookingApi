@@ -13,10 +13,12 @@ public class SuspendPropertyHandler
     : IRequestHandler<SuspendPropertyCommand>
 {
     private readonly IPropertyRepository _repository;
-
-    public SuspendPropertyHandler(IPropertyRepository repository)
+    private readonly INotificationRepository _notificationRepository;
+    public SuspendPropertyHandler(IPropertyRepository repository, 
+        INotificationRepository notificationRepository)
     {
         _repository = repository;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<Unit> Handle(
@@ -30,14 +32,14 @@ public class SuspendPropertyHandler
 
         property.Suspend();
 
-        await _repository.SaveChangesAsync();
-
-
 
         var notification = new Notification(
             property.OwnerId,
             "Your property has been suspended.",
             "PropertySuspended");
+
+        await _notificationRepository.AddAsync(notification);
+        await _repository.SaveChangesAsync();
 
         return Unit.Value;
     }

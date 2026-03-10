@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
 using MediatR;
 
@@ -15,15 +10,18 @@ public class AddBlockedDateHandler
     private readonly IPropertyRepository _propertyRepository;
     private readonly IBlockedDateRepository _blockedDateRepository;
     private readonly ICurrentUserService _currentUser;
+    private readonly INotificationRepository _notificationRepository;
 
     public AddBlockedDateHandler(
         IPropertyRepository propertyRepository,
         IBlockedDateRepository blockedDateRepository,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        INotificationRepository notificationRepository)
     {
         _propertyRepository = propertyRepository;
         _blockedDateRepository = blockedDateRepository;
         _currentUser = currentUser;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<Guid> Handle(
@@ -44,6 +42,18 @@ public class AddBlockedDateHandler
         );
 
         await _blockedDateRepository.AddAsync(blockedDate);
+
+        var message = $"Date {request.Date:yyyy-MM-dd} has been blocked for your property.";
+
+        var notification = new Notification(
+            property.OwnerId,
+            message,
+            "BlockedDateAdded"
+        );
+
+        await _notificationRepository.AddAsync(notification);
+
+        await _propertyRepository.SaveChangesAsync();
 
         return blockedDate.Id;
     }

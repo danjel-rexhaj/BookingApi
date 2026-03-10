@@ -5,7 +5,12 @@ using BookingPlatform.Infrastructure.BackgroundJobs;
 using BookingPlatform.Infrastructure.DependencyInjection;
 using BookingPlatform.Infrastructure.Persistence;
 using BookingPlatform.Infrastructure.Persistence.Repositories;
+using BookingPlatform.Infrastructure.Realtime;
 using BookingPlatform.Infrastructure.Repositories;
+using BookingPlatform.Infrastructure.services;
+using BookingPlatform.Infrastructure.Services;
+using Hangfire;
+using Hangfire.SqlServer;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -75,7 +80,8 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddMediatR(typeof(RegisterCommand).Assembly);
-builder.Services.AddHostedService<BookingLifecycleBackgroundService>();
+builder.Services.AddScoped<BookingLifecycleJob>();
+
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddControllers();
@@ -88,6 +94,12 @@ builder.Services.AddScoped<IPropertyImageRepository, PropertyImageRepository>();
 builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHangfireServer();
+builder.Services.AddSignalR();
+
 builder.Services.AddHostedService<BookingReminderService>();
 builder.Services.AddScoped<IPropertyAmenityRepository, PropertyAmenityRepository>();
 builder.Services.AddScoped<IOwnerProfileRepository, OwnerProfileRepository>();
@@ -97,9 +109,24 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-
+builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 builder.WebHost.UseWebRoot("wwwroot");
+
+builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+
+
 var app = builder.Build();
+
+
+
+app.UseHangfireDashboard();
+
+RecurringJob.AddOrUpdate<BookingLifecycleJob>(
+    "booking-lifecycle-job",
+    job => job.ProcessBookings(),
+    "*/5 * * * *"
+);
+app.MapHub<NotificationHub>("/notifications");
 
 if (app.Environment.IsDevelopment())
 {
@@ -114,4 +141,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.UseStaticFiles();
+
 app.Run();

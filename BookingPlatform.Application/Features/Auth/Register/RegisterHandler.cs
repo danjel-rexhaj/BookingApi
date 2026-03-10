@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Hangfire;
 using MediatR;
 using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
@@ -16,14 +16,17 @@ public class RegisterHandler
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IRoleRepository _roleRepository;
+    private readonly IEmailService _emailService;
     public RegisterHandler(
         IUserRepository userRepository,
         IRoleRepository roleRepository,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        IEmailService emailService)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;
         _passwordHasher = passwordHasher;
+        _emailService = emailService;
     }
 
     public async Task<string> Handle(
@@ -58,6 +61,14 @@ public class RegisterHandler
 
         await _userRepository.AddAsync(user);
         await _userRepository.SaveChangesAsync();
+
+        BackgroundJob.Enqueue(() =>
+            _emailService.SendEmailAsync(
+                user.Email,
+                "Welcome to Booking Platform",
+                "Welcome to our platform! Your account has been created successfully."
+            )
+        );
 
         return "User registered successfully";
     }

@@ -9,6 +9,10 @@ namespace BookingPlatform.Application.Interfaces
 {
     public interface IPropertyRuleRepository
     {
+        Task<List<PropertyRule>> GetByPropertyIdAsync(Guid propertyId);
+
         Task AddAsync(PropertyRule rule);
+
+        Task DeleteByPropertyIdAsync(Guid propertyId);
     }
 }

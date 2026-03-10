@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BookingPlatform.Application.Features
+namespace BookingPlatform.Application.Features.Auth
 {
     public class AuthResponseDto
     {
-        public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
+        public required string AccessToken { get; set; }
+        public required string RefreshToken { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using BookingPlatform.Application.Features.Auth;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;

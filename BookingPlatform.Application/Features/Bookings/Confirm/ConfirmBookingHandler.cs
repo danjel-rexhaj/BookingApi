@@ -52,7 +52,7 @@ public class ConfirmBookingHandler : IRequestHandler<ConfirmBookingCommand, Unit
             "BookingConfirmed");
 
         await _notificationRepository.AddAsync(notification);
-        await _notificationRepository.SaveChangesAsync();
+        await _bookingRepo.SaveChangesAsync();
 
         return Unit.Value;
     }

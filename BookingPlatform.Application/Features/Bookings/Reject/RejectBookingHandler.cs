@@ -13,11 +13,15 @@ public class RejectBookingHandler : IRequestHandler<RejectBookingCommand, Unit>
 {
     private readonly IBookingRepository _bookingRepo;
     private readonly ICurrentUserService _currentUser;
+    private readonly INotificationRepository _notificationRepository;
 
-    public RejectBookingHandler(IBookingRepository bookingRepo, ICurrentUserService currentUser)
+    public RejectBookingHandler(IBookingRepository bookingRepo, 
+        ICurrentUserService currentUser,
+        INotificationRepository notificationRepository)
     {
         _bookingRepo = bookingRepo;
         _currentUser = currentUser;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<Unit> Handle(RejectBookingCommand request, CancellationToken cancellationToken)
@@ -35,6 +39,10 @@ public class RejectBookingHandler : IRequestHandler<RejectBookingCommand, Unit>
             booking.GuestId,
             "Your booking has been rejected.",
             "BookingRejected");
+
+
+        await _notificationRepository.AddAsync(notification);
+        await _bookingRepo.SaveChangesAsync();
 
         return Unit.Value;
     }

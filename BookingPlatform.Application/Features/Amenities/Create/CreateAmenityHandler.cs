@@ -1,35 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
 using MediatR;
 
-namespace BookingPlatform.Application.Features.Amenities.Create
+namespace BookingPlatform.Application.Features.Amenities.Create;
+
+public class CreateAmenityHandler
+    : IRequestHandler<CreateAmenityCommand, Guid>
 {
-    public class CreateAmenityHandler
-        : IRequestHandler<CreateAmenityCommand, Guid>
+    private readonly IAmenityRepository _repository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly ICurrentUserService _currentUser;
+
+    public CreateAmenityHandler(
+        IAmenityRepository repository,
+        INotificationRepository notificationRepository,
+        ICurrentUserService currentUser)
     {
-        private readonly IAmenityRepository _repository;
+        _repository = repository;
+        _notificationRepository = notificationRepository;
+        _currentUser = currentUser;
+    }
 
-        public CreateAmenityHandler(IAmenityRepository repository)
-        {
-            _repository = repository;
-        }
+    public async Task<Guid> Handle(
+        CreateAmenityCommand request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new Exception("Amenity name is required");
 
-        public async Task<Guid> Handle(
-            CreateAmenityCommand request,
-            CancellationToken cancellationToken)
-        {
-            var amenity = new Amenity(request.Name);
+        var amenity = new Amenity(request.Name);
 
-            await _repository.AddAsync(amenity);
+        await _repository.AddAsync(amenity);
 
-            await _repository.SaveChangesAsync();
+        var notification = new Notification(
+            _currentUser.UserId,
+            $"Amenity '{request.Name}' has been created.",
+            "AmenityCreated"
+        );
 
-            return amenity.Id;
-        }
+        await _notificationRepository.AddAsync(notification);
+
+        await _repository.SaveChangesAsync();
+
+        return amenity.Id;
     }
 }

@@ -13,7 +13,6 @@ public class PropertyImage
     public string ImageUrl { get; private set; }
     public DateTime CreatedAt { get; private set; }
 
-    private PropertyImage() { }
 
     public PropertyImage(Guid propertyId, string imageUrl)
     {

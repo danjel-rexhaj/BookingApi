@@ -8,10 +8,12 @@ namespace BookingPlatform.Application.Features.Properties.Reject
         : IRequestHandler<RejectPropertyCommand, Unit>
     {
         private readonly IPropertyRepository _repository;
-
-        public RejectPropertyHandler(IPropertyRepository repository)
+        private readonly INotificationRepository _notificationRepository;
+        public RejectPropertyHandler(IPropertyRepository repository, 
+            INotificationRepository notificationRepository)
         {
             _repository = repository;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<Unit> Handle(
@@ -25,13 +27,14 @@ namespace BookingPlatform.Application.Features.Properties.Reject
 
             property.Reject();
 
-            await _repository.SaveChangesAsync();
-
 
             var notification = new Notification(
                 property.OwnerId,
                 "Your property has been rejected.",
                 "PropertyRejected");
+
+            await _notificationRepository.AddAsync(notification);
+            await _repository.SaveChangesAsync();
 
             return Unit.Value;
         }

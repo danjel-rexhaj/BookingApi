@@ -1,9 +1,10 @@
 ﻿using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
+using BookingPlatform.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookingPlatform.Infrastructure.Persistence.Repositories
-{
+namespace BookingPlatform.Infrastructure.Repositories;
+
     public class OwnerProfileRepository : IOwnerProfileRepository
     {
         private readonly BookingDbContext _context;
@@ -29,4 +30,3 @@ namespace BookingPlatform.Infrastructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
     }
-}

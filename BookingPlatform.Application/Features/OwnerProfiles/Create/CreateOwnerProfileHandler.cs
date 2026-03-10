@@ -1,26 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
 using MediatR;
 
 namespace BookingPlatform.Application.Features.OwnerProfiles.Create;
 
 public class CreateOwnerProfileHandler
-    : IRequestHandler<CreateOwnerProfileCommand>
+    : IRequestHandler<CreateOwnerProfileCommand, Unit>
 {
     private readonly IOwnerProfileRepository _repository;
     private readonly ICurrentUserService _currentUser;
+    private readonly INotificationRepository _notificationRepository;
 
     public CreateOwnerProfileHandler(
         IOwnerProfileRepository repository,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        INotificationRepository notificationRepository)
     {
         _repository = repository;
         _currentUser = currentUser;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<Unit> Handle(
@@ -37,6 +35,15 @@ public class CreateOwnerProfileHandler
         );
 
         await _repository.AddAsync(profile);
+
+        var notification = new Notification(
+            userId,
+            "Your owner profile has been created successfully.",
+            "OwnerProfileCreated"
+        );
+
+        await _notificationRepository.AddAsync(notification);
+
         await _repository.SaveChangesAsync();
 
         return Unit.Value;
