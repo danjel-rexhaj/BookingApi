@@ -22,7 +22,8 @@ public class SendGridEmailService : IEmailService
 
     public async Task SendEmailAsync(string to, string subject, string message)
     {
-        var apiKey = _config["SendGrid:ApiKey"];
+        var apiKey = _config["SendGrid:ApiKey"]
+            ?? throw new Exception("SendGrid API key missing");
         var client = new SendGridClient(apiKey);
 
         var from = new EmailAddress(

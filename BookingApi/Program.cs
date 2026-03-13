@@ -3,6 +3,7 @@ using BookingPlatform.Application.Features.Auth.Register;
 using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Infrastructure.BackgroundJobs;
 using BookingPlatform.Infrastructure.DependencyInjection;
+using BookingPlatform.Infrastructure.Messaging;
 using BookingPlatform.Infrastructure.Persistence;
 using BookingPlatform.Infrastructure.Persistence.Repositories;
 using BookingPlatform.Infrastructure.Realtime;
@@ -17,7 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
-
+using Confluent.Kafka;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -114,6 +115,9 @@ builder.WebHost.UseWebRoot("wwwroot");
 
 builder.Services.AddScoped<IEmailService, SendGridEmailService>();
 
+
+builder.Services.AddHostedService<KafkaConsumer>();
+builder.Services.AddSingleton<IEventProducer, KafkaProducer>();
 
 var app = builder.Build();
 

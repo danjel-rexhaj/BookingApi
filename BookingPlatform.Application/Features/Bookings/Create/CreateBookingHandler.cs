@@ -3,7 +3,6 @@ using BookingPlatform.Domain.Entities;
 using BookingPlatform.Domain.Enums;
 using MediatR;
 
-
 namespace BookingPlatform.Application.Features.Bookings.Create;
 
 public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
@@ -15,6 +14,8 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
     private readonly ISeasonalPriceRepository _seasonalPriceRepository;
     private readonly INotificationRepository _notificationRepository;
     private readonly INotificationService _notificationService;
+    private readonly IEventProducer _eventProducer;
+
     public CreateBookingHandler(
     IBookingRepository bookingRepository,
     IPropertyRepository propertyRepository,
@@ -22,16 +23,18 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
     IBlockedDateRepository blockedDateRepository,
     ISeasonalPriceRepository seasonalPriceRepository,
     INotificationRepository notificationRepository,
-    INotificationService notificationService)
-{
-    _bookingRepository = bookingRepository;
-    _propertyRepository = propertyRepository;
-    _currentUserService = currentUserService;
-    _blockedDateRepository = blockedDateRepository;
-    _seasonalPriceRepository = seasonalPriceRepository;
-    _notificationRepository = notificationRepository;
-    _notificationService = notificationService;
-}
+    INotificationService notificationService,
+    IEventProducer eventProducer)
+    {
+        _bookingRepository = bookingRepository;
+        _propertyRepository = propertyRepository;
+        _currentUserService = currentUserService;
+        _blockedDateRepository = blockedDateRepository;
+        _seasonalPriceRepository = seasonalPriceRepository;
+        _notificationRepository = notificationRepository;
+        _notificationService = notificationService;
+        _eventProducer = eventProducer;
+    }
 
     public async Task<Guid> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
     {
@@ -178,6 +181,14 @@ public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, Guid>
             newBooking.GuestId,
             "Your booking has been created."
         );
+        await _eventProducer.SendBookingCreatedAsync(new
+        {
+            BookingId = newBooking.Id,
+            PropertyId = newBooking.PropertyId,
+            GuestId = newBooking.GuestId,
+            StartDate = newBooking.StartDate,
+            EndDate = newBooking.EndDate
+        });
         return newBooking.Id;
     }
 }
