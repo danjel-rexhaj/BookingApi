@@ -57,4 +57,13 @@ public class User
         ProfileImageUrl = imageUrl;
         LastModifiedAt = DateTime.UtcNow;
     }
+    public void AddRole(Guid roleId)
+    {
+        if (UserRoles.Any(ur => ur.RoleId == roleId))
+            return;
+
+        UserRoles.Add(new UserRole(Id, roleId, DateTime.UtcNow));
+        LastModifiedAt = DateTime.UtcNow;
+    }
+
 }

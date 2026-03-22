@@ -3,31 +3,36 @@ using BookingPlatform.Application.Features.Auth.Register;
 using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Infrastructure.BackgroundJobs;
 using BookingPlatform.Infrastructure.DependencyInjection;
-using BookingPlatform.Infrastructure.Messaging;
-using BookingPlatform.Infrastructure.Persistence;
-using BookingPlatform.Infrastructure.Persistence.Repositories;
 using BookingPlatform.Infrastructure.Realtime;
-using BookingPlatform.Infrastructure.Repositories;
 using BookingPlatform.Infrastructure.services;
 using BookingPlatform.Infrastructure.Services;
 using Hangfire;
 using Hangfire.SqlServer;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
-using Confluent.Kafka;
+using BookingPlatform.Application.Interfaces;
+using BookingPlatform.Infrastructure.Messaging;
+using BookingPlatform.Infrastructure.Outbox;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Infrastructure
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddMediatR(typeof(RegisterCommand));
+// MediatR
+builder.Services.AddMediatR(typeof(RegisterCommand).Assembly);
 
-builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
-builder.Services.AddControllers();
-
+// Controllers + JSON
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -52,12 +57,12 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
 
-
+// Authentication + Authorization
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -76,52 +81,70 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) &&
+                path.StartsWithSegments("/notifications"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+
 builder.Services.AddAuthorization();
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddMediatR(typeof(RegisterCommand).Assembly);
-builder.Services.AddScoped<BookingLifecycleJob>();
 
-builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddScoped<IBlockedDateRepository, BlockedDateRepository>();
-builder.Services.AddScoped<ISeasonalPriceRepository, SeasonalPriceRepository>();
-builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
-builder.Services.AddScoped<IAddressRepository, AddressRepository>();
-builder.Services.AddScoped<IPropertyImageRepository, PropertyImageRepository>();
-builder.Services.AddDbContext<BookingDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.Configure<KafkaSettings>(
+    builder.Configuration.GetSection("Kafka"));
 
+builder.Services.AddScoped<IEventProducer, KafkaProducer>();
+builder.Services.AddHostedService<OutboxPublisherService>();
+
+// Hangfire
 builder.Services.AddHangfire(config =>
     config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddHangfireServer();
+builder.Services.AddScoped<BookingLifecycleJob>();
+
+// SignalR
 builder.Services.AddSignalR();
 
+// Background services
 builder.Services.AddHostedService<BookingReminderService>();
-builder.Services.AddScoped<IPropertyAmenityRepository, PropertyAmenityRepository>();
-builder.Services.AddScoped<IOwnerProfileRepository, OwnerProfileRepository>();
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("SignalRCors", policy =>
     {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .SetIsOriginAllowed(_ => true)
+            .AllowCredentials();
     });
+});
 
-builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 builder.WebHost.UseWebRoot("wwwroot");
-
-builder.Services.AddScoped<IEmailService, SendGridEmailService>();
-
-
-builder.Services.AddHostedService<KafkaConsumer>();
-builder.Services.AddSingleton<IEventProducer, KafkaProducer>();
 
 var app = builder.Build();
 
+app.UseCors("SignalRCors");
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHangfireDashboard();
 
@@ -130,20 +153,16 @@ RecurringJob.AddOrUpdate<BookingLifecycleJob>(
     job => job.ProcessBookings(),
     "*/5 * * * *"
 );
-app.MapHub<NotificationHub>("/notifications");
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseStaticFiles();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();

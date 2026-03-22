@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Infrastructure.Realtime;
 using Microsoft.AspNetCore.SignalR;
 
@@ -11,16 +6,24 @@ namespace BookingPlatform.Infrastructure.Services;
 
 public class SignalRNotificationService : INotificationService
 {
-    private readonly IHubContext<NotificationHub> _hub;
+    private readonly IHubContext<NotificationHub> _hubContext;
 
-    public SignalRNotificationService(IHubContext<NotificationHub> hub)
+    public SignalRNotificationService(IHubContext<NotificationHub> hubContext)
     {
-        _hub = hub;
+        _hubContext = hubContext;
     }
 
     public async Task SendNotificationAsync(Guid userId, string message)
     {
-        await _hub.Clients.User(userId.ToString())
+        await _hubContext.Clients
+            .Group(userId.ToString())
             .SendAsync("ReceiveNotification", message);
     }
 }
+
+
+/*  await _hub.Clients.All
+     .SendAsync("ReceiveNotification", message);
+*/
+//testimin e ben nga.user ne ALL nga swagger hap file 
+//file:///C:/Users/User/Desktop/signalr-testt.html

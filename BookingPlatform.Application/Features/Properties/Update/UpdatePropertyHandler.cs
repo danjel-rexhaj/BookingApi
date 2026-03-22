@@ -18,13 +18,17 @@ namespace BookingPlatform.Application.Features.Properties.Update
         private readonly IPropertyRepository _repository;
         private readonly IPropertyRuleRepository _propertyRuleRepository;
         private readonly INotificationRepository _notificationRepository;
+        private readonly INotificationService _notificationService;
         public UpdatePropertyHandler(IPropertyRepository repository, 
             IPropertyRuleRepository propertyAmenityRepository, 
-            INotificationRepository notificationRepository)
+            INotificationRepository notificationRepository,
+            INotificationService notificationService
+            )
         {
             _repository = repository;
             _propertyRuleRepository = propertyAmenityRepository;
             _notificationRepository = notificationRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<Unit> Handle(UpdatePropertyCommand request, CancellationToken cancellationToken)
@@ -58,6 +62,8 @@ namespace BookingPlatform.Application.Features.Properties.Update
             }
             await _repository.SaveChangesAsync();
 
+            var message = "Your property has been updated.";
+
             var notification = new Notification(
                 property.OwnerId,
                 "Your property has been updated.",
@@ -66,6 +72,10 @@ namespace BookingPlatform.Application.Features.Properties.Update
             await _notificationRepository.AddAsync(notification);
             await _repository.SaveChangesAsync();
 
+            await _notificationService.SendNotificationAsync(
+               property.OwnerId,
+               message
+            );
 
             return Unit.Value;
         }

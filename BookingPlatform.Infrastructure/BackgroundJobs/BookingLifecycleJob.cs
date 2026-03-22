@@ -13,6 +13,8 @@ public class BookingLifecycleJob
         _context = context;
     }
 
+
+
     public async Task ProcessBookings()
     {
         var now = DateTime.UtcNow;
@@ -41,4 +43,6 @@ public class BookingLifecycleJob
 
         await _context.SaveChangesAsync();
     }
+
+
 }

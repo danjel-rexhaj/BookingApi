@@ -1,42 +1,114 @@
-﻿using BookingPlatform.Application.Interfaces;
+﻿using BookingPlatform.Application.Events;
+using BookingPlatform.Application.Interfaces;
 using BookingPlatform.Domain.Entities;
+using Hangfire;
 using MediatR;
+using System.Text.Json;
 
-namespace BookingPlatform.Application.Features.Properties.Reject
+namespace BookingPlatform.Application.Features.Properties.Reject;
+
+public class RejectPropertyHandler : IRequestHandler<RejectPropertyCommand, Unit>
 {
-    public class RejectPropertyHandler
-        : IRequestHandler<RejectPropertyCommand, Unit>
+    private readonly IPropertyRepository _repository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly INotificationService _notificationService;
+    private readonly IUserRepository _userRepository;
+    private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
+    private readonly IOutboxRepository _outboxRepository;
+
+    public RejectPropertyHandler(
+        IPropertyRepository repository,
+        INotificationRepository notificationRepository,
+        INotificationService notificationService,
+        IUserRepository userRepository,
+        IEmailService emailService,
+        IEmailTemplateService emailTemplateService,
+        IOutboxRepository outboxRepository)
     {
-        private readonly IPropertyRepository _repository;
-        private readonly INotificationRepository _notificationRepository;
-        public RejectPropertyHandler(IPropertyRepository repository, 
-            INotificationRepository notificationRepository)
+        _repository = repository;
+        _notificationRepository = notificationRepository;
+        _notificationService = notificationService;
+        _userRepository = userRepository;
+        _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
+        _outboxRepository = outboxRepository;
+    }
+
+    public async Task<Unit> Handle(
+        RejectPropertyCommand request,
+        CancellationToken cancellationToken)
+    {
+        var property = await _repository.GetByIdAsync(request.PropertyId);
+        if (property == null)
+            throw new Exception("Property not found.");
+
+        var owner = await _userRepository.GetByIdAsync(property.OwnerId);
+        if (owner == null)
+            throw new Exception("Owner not found.");
+
+        var rejectedAtUtc = DateTime.UtcNow;
+
+        property.Reject();
+
+        var message = "Your property has been rejected.";
+
+        var notification = new Notification(
+            property.OwnerId,
+            message,
+            "PropertyRejected"
+        );
+
+        await _notificationRepository.AddAsync(notification);
+        await _repository.SaveChangesAsync();
+
+        var propertyRejectedEvent = new PropertyRejectedIntegrationEvent
         {
-            _repository = repository;
-            _notificationRepository = notificationRepository;
-        }
+            PropertyId = property.Id,
+            OwnerId = property.OwnerId,
+            PropertyName = property.Name,
+            City = property.Address.City,
+            Country = property.Address.Country,
+            PropertyType = property.PropertyType,
+            MaxGuests = property.MaxGuests,
+            PricePerNight = property.BasePricePerNight,
+            RejectedAtUtc = rejectedAtUtc
+        };
 
-        public async Task<Unit> Handle(
-            RejectPropertyCommand request,
-            CancellationToken cancellationToken)
+        var outboxMessage = new OutboxMessage
         {
-            var property = await _repository.GetByIdAsync(request.PropertyId);
+            Id = Guid.NewGuid(),
+            Type = nameof(PropertyRejectedIntegrationEvent),
+            Payload = JsonSerializer.Serialize(propertyRejectedEvent),
+            OccurredOnUtc = DateTime.UtcNow
+        };
 
-            if (property == null)
-                throw new Exception("Property not found");
+        await _outboxRepository.AddAsync(outboxMessage);
+        await _outboxRepository.SaveChangesAsync();
 
-            property.Reject();
+        await _notificationService.SendNotificationAsync(
+            property.OwnerId,
+            message
+        );
 
+        var emailBody = _emailTemplateService.GetPropertyRejectedEmail(
+            owner.FirstName,
+            property.Name,
+            property.Address.City,
+            property.Address.Country,
+            property.PropertyType,
+            property.MaxGuests,
+            property.BasePricePerNight
+        );
 
-            var notification = new Notification(
-                property.OwnerId,
-                "Your property has been rejected.",
-                "PropertyRejected");
+        BackgroundJob.Enqueue(() =>
+            _emailService.SendEmailAsync(
+                owner.Email,
+                "Your property has been rejected",
+                emailBody
+            )
+        );
 
-            await _notificationRepository.AddAsync(notification);
-            await _repository.SaveChangesAsync();
-
-            return Unit.Value;
-        }
+        return Unit.Value;
     }
 }

@@ -12,5 +12,5 @@ namespace BookingPlatform.Application.Features.Addresses.Create
         string City,
         string Street,
         string PostalCode
-    ) : IRequest<Guid>;
+    ) : IRequest<Guid>; // The command returns the ID of the newly created address nga MediatR request with a Guid response
 }

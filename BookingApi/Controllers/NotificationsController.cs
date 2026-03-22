@@ -31,4 +31,16 @@ public class NotificationsController : ControllerBase
 
         return Ok(result);
     }
+
+
+    [HttpGet("test-signalr")]
+    public async Task<IActionResult> TestSignalR(
+    [FromServices] INotificationService notificationService)
+    {
+        await notificationService.SendNotificationAsync(
+            Guid.NewGuid(),
+            "SignalR works!");
+
+        return Ok("sent");
+    }
 }

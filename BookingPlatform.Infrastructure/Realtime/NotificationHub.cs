@@ -1,16 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace BookingPlatform.Infrastructure.Realtime;
 
 public class NotificationHub : Hub
 {
-    public async Task SendNotification(string userId, string message)
+    public override async Task OnConnectedAsync()
     {
-        await Clients.User(userId).SendAsync("ReceiveNotification", message);
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+        }
+
+        await base.OnConnectedAsync();
+    }
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+        }
+
+        await base.OnDisconnectedAsync(exception);
     }
 }

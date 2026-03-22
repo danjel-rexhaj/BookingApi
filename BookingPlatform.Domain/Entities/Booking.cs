@@ -1,4 +1,4 @@
-﻿using BookingPlatform.Domain.Enums;
+﻿using BookingPlatform.Domain.Enums; //sepse booking status eshte enum
 
 namespace BookingPlatform.Domain.Entities;
 
@@ -6,8 +6,8 @@ public class Booking
 {
     public Guid Id { get; private set; }
 
-    public Guid PropertyId { get; private set; }
-    public Property Property { get; private set; } = null!;
+    public Guid PropertyId { get; private set; } //foreign key e property
+    public Property Property { get; private set; } = null!; //objekti i plote
 
     public Guid GuestId { get; private set; }
     public User Guest { get; private set; } = null!;
@@ -36,7 +36,7 @@ public class Booking
     public decimal TaxAmount { get; private set; }
     private Booking() { }
 
-    public Booking(Guid propertyId, Guid guestId, DateTime startDate, DateTime endDate, int guestCount)
+    public Booking(Guid propertyId, Guid guestId, DateTime startDate, DateTime endDate, int guestCount)  // konstruktori per te krijuar nje booking te ri, pa i vendosur cmimet dhe statusin
     {
         Id = Guid.NewGuid();
         PropertyId = propertyId;
@@ -51,7 +51,7 @@ public class Booking
     }
 
 
-    public void SetPricing(
+    public void SetPricing( //metode per te vendosur cmimet pasi te llogariten
         decimal cleaningFee,
         decimal amenitiesUpCharge,
         decimal priceForPeriod,
@@ -67,14 +67,14 @@ public class Booking
 
 
 
-    public void Confirm(DateTime utcNow)
+    public void Confirm(DateTime utcNow) //metode per te konfirmuar booking, ndryshon statusin dhe vendos daten e konfirmimit
     {
         if (BookingStatus != BookingStatus.Pending)
             throw new Exception("Only pending bookings can be confirmed.");
 
         BookingStatus = BookingStatus.Confirmed;
         ConfirmedOnUtc = utcNow;
-        LastModifiedAt = utcNow;
+        LastModifiedAt = utcNow; //cordinated universal time utcNOW
     }
 
     public void Reject(DateTime utcNow)
@@ -133,11 +133,11 @@ public class Booking
         decimal refundPercentage;
 
         if (hoursBeforeStart > 48)
-            refundPercentage = 1m;
+            refundPercentage = 1m;//100% refund if cancelled more than 48 hours before start
         else if (hoursBeforeStart > 24)
-            refundPercentage = 0.5m;
+            refundPercentage = 0.5m; //50% refund if cancelled between 24 and 48 hours before start
         else
-            refundPercentage = 0m;
+            refundPercentage = 0m; //no refund if cancelled less than 24 hours before start
 
         RefundAmount = TotalPrice * refundPercentage;
 

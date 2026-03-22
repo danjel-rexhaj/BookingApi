@@ -25,7 +25,7 @@ public class GetAllUsersHandler : IRequestHandler<GetAllUsersQuery, List<UserDto
             FirstName = u.FirstName,
             LastName = u.LastName,
             IsActive = u.IsActive,
-            Role = u.UserRoles.FirstOrDefault()?.Role?.Name ?? ""
+            Role = u.UserRoles.FirstOrDefault()?.Role?.Name ?? "" // Assuming a user has at least one role, otherwise default to an empty string and don t throw an exception
         }).ToList();
     }
-}
+}// tek Admin request Controller -> Mediator.Send(GetAllUsersQuery) -> GetAllUsersHandler -> UserRepository.GetAllAsync() -> Database -> List<User> ->Mapping → UserDto ->Return List<UserDto>

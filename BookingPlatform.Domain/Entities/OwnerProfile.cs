@@ -10,10 +10,6 @@ namespace BookingPlatform.Domain.Entities
         public string IdentityCardNumber { get; set; } = string.Empty;
         public string CreditCard { get; set; } = string.Empty;
 
-        public string? ImageUrl { get; set; }
-
-        public List<Amenity> Amenities { get; set; } = new();
-
         public User User { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; }
         public DateTime? LastModifiedAt { get; private set; }

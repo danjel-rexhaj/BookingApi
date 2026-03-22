@@ -23,6 +23,7 @@ public class GetAllBookingsHandler
         CancellationToken cancellationToken)
     {
         var bookings = await _repository.GetAllAsync();
+        //app layer ->repository interface -> infrastructure repository -> db
 
         return bookings.Select(b => new GetAllBookingsResponse
         {

@@ -41,7 +41,7 @@ public class Property
     */
     public decimal BasePricePerNight { get; set; }
 
-    public ICollection<PropertyAmenity> Amenities { get; private set; } = new List<PropertyAmenity>();
+    public ICollection<PropertyAmenity> Amenities { get; private set; } = new List<PropertyAmenity>();// lidhja me amenity permes nje table many-to-many
 
     public Property(Guid ownerId, Guid addressId, string name,
                     string description, string propertyType, int maxGuests,
@@ -58,7 +58,7 @@ public class Property
         CheckOutTime = checkOutTime;
         BasePricePerNight = basePricePerNight;
 
-        IsActive = true;
+        IsActive = false;
         IsApproved = false;
         CreatedAt = DateTime.UtcNow;
     }
@@ -66,6 +66,7 @@ public class Property
     public void Approve()
     {
         IsApproved = true;
+        IsActive = true;
         LastModifiedAt = DateTime.UtcNow;
     }
 

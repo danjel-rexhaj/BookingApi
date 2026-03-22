@@ -11,11 +11,15 @@ public class UpdatePropertyAmenitiesHandler
 {
     private readonly IPropertyRepository _repository;
     private readonly INotificationRepository _notificationRepository;
+    private readonly INotificationService _notificationService;
     public UpdatePropertyAmenitiesHandler(IPropertyRepository repository, 
-        INotificationRepository notificationRepository)
+        INotificationRepository notificationRepository,
+        INotificationService notificationService)
+
     {
         _repository = repository;
         _notificationRepository = notificationRepository;
+        _notificationService = notificationService;
     }
 
     public async Task<Unit> Handle(UpdatePropertyAmenitiesCommand request, CancellationToken cancellationToken)
@@ -27,6 +31,8 @@ public class UpdatePropertyAmenitiesHandler
 
         property.UpdateAmenities(request.AmenityIds);
 
+        var message = "Your amenities has been updated.";
+
         var notification = new Notification(
             property.OwnerId,
             "Your amenities has been updated.",
@@ -34,6 +40,11 @@ public class UpdatePropertyAmenitiesHandler
 
         await _notificationRepository.AddAsync(notification);
         await _repository.SaveChangesAsync();
+
+        await _notificationService.SendNotificationAsync(
+           property.OwnerId,
+           message
+       );
 
         return Unit.Value;
     }

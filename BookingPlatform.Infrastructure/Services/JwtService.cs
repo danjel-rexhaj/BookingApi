@@ -17,6 +17,8 @@ public class JwtService : IJwtService
         _configuration = configuration;
     }
 
+
+
     public string GenerateToken(User user, IEnumerable<string> roles)
     {
         var key = new SymmetricSecurityKey(
@@ -42,7 +44,12 @@ public class JwtService : IJwtService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+
+
     private static Dictionary<string, Guid> _refreshTokens = new();
+
+
+
     public string GenerateRefreshToken(Guid userId)
     {
         var randomNumber = new byte[64];
@@ -57,6 +64,8 @@ public class JwtService : IJwtService
     }
 
 
+
+
     public Guid? ValidateRefreshToken(string refreshToken)
     {
         if (_refreshTokens.TryGetValue(refreshToken, out var userId))
@@ -65,8 +74,13 @@ public class JwtService : IJwtService
         return null;
     }
 
+
+
     public void RemoveRefreshToken(string refreshToken)
     {
         _refreshTokens.Remove(refreshToken);
     }
+
+
+
 }

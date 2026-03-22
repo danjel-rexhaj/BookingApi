@@ -17,12 +17,12 @@ public class PropertyRepository : IPropertyRepository
     public async Task AddAsync(Property property)
     {
         await _context.Properties.AddAsync(property);
-        await _context.SaveChangesAsync();
     }
 
     public async Task<Property?> GetByIdAsync(Guid id)
     {
         return await _context.Properties
+            .Include(p => p.Address)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 

@@ -9,3 +9,4 @@ public interface IEmailService
 {
     Task SendEmailAsync(string to, string subject, string message);
 }
+//pjese e services lidhur me pjesen e email  tek folder sevices

@@ -9,7 +9,7 @@ public class Address
     public string Street { get; private set; } = null!;
     public string PostalCode { get; private set; } = null!;
 
-    public ICollection<Property> Properties { get; private set; } = new List<Property>();
+    public ICollection<Property> Properties { get; private set; } = new List<Property>(); // Navigation property for related properties, nje adrese permban shume prona 
 
     private Address() { }
 

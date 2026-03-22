@@ -13,7 +13,6 @@
   <ItemGroup>
     <Folder Include="Features\Media\DeleteImage\" />
     <Folder Include="Features\Media\UploadImage\" />
-    <Folder Include="Features\Properties\GetDetails\" />
   </ItemGroup>
 
   <ItemGroup>

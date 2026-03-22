@@ -19,6 +19,7 @@ public class SeasonalPriceRepository : ISeasonalPriceRepository
         _context = context;
     }
 
+
     public async Task<List<SeasonalPrice>>
         GetByPropertyIdAsync(Guid propertyId)
     {
@@ -27,9 +28,11 @@ public class SeasonalPriceRepository : ISeasonalPriceRepository
             .ToListAsync();
     }
 
+
     public async Task AddAsync(SeasonalPrice seasonalPrice)
     {
         await _context.SeasonalPrices.AddAsync(seasonalPrice);
         await _context.SaveChangesAsync();
     }
+
 }

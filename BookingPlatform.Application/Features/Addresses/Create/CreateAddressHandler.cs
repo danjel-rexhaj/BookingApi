@@ -41,7 +41,9 @@ namespace BookingPlatform.Application.Features.Addresses.Create
                 request.PostalCode
             );
 
-            await _repository.AddAsync(address);
+            await _repository.AddAsync(address);  // Shton adresen ne repository
+
+            //pra merret nga interface jo direkt nga db
 
             var notification = new Notification(
                 _currentUser.UserId,

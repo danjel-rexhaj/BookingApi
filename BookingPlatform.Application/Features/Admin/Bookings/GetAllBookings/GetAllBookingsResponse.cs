@@ -17,3 +17,5 @@ public class GetAllBookingsResponse
     public string Status { get; set; } = string.Empty;
     public decimal TotalPrice { get; set; }
 }
+//data transfer object DTO , nuk perdorim direkt nga entities sepse nuk duam te ekspozojme direkt domain entities ne API 
+//, dhe gjithashtu mund te kemi nevoje te transformojme apo te perzgjedhim vetem disa nga fushat e entity-ve per t'i derguar ne klient.

@@ -27,7 +27,7 @@ public class SuspendUserHandler
         if (user == null)
             throw new Exception("User not found");
 
-        user.Deactivate();
+        user.Deactivate(); // e marrim metoden nga enity dhe e bejme userin deactive
 
         var notification = new Notification(
             user.Id,

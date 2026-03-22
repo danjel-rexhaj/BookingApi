@@ -17,6 +17,8 @@ namespace BookingPlatform.Infrastructure.services
             _serviceProvider = serviceProvider;
         }
 
+
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)

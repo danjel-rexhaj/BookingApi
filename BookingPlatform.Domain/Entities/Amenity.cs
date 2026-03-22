@@ -16,7 +16,7 @@ public class Amenity
 
     public Amenity(string name)
     {
-        Id = Guid.NewGuid();
+        Id = Guid.NewGuid(); // id unike f3c2e5c7-7c4c-4f3d-b2d1-5c5c9b2f2d3a
         Name = name;
     }
 

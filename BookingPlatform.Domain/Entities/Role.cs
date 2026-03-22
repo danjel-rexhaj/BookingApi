@@ -6,7 +6,7 @@ public class Role
     public string Name { get; private set; } = null!;
     public string? Description { get; private set; }
 
-    public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
+    public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();// Navigation property for related user roles
 
 
     public Role(Guid id, string name, string? description = null)

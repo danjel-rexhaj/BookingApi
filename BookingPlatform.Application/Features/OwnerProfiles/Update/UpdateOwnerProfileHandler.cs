@@ -10,15 +10,18 @@ public class UpdateOwnerProfileHandler
     private readonly IOwnerProfileRepository _repository;
     private readonly ICurrentUserService _currentUser;
     private readonly INotificationRepository _notificationRepository;
+    private readonly INotificationService _notificationService;
 
     public UpdateOwnerProfileHandler(
         IOwnerProfileRepository repository,
         ICurrentUserService currentUser,
-        INotificationRepository notificationRepository)
+        INotificationRepository notificationRepository,
+        INotificationService notificationService)
     {
         _repository = repository;
         _currentUser = currentUser;
         _notificationRepository = notificationRepository;
+        _notificationService = notificationService;
     }
 
     public async Task<Unit> Handle(
@@ -38,15 +41,21 @@ public class UpdateOwnerProfileHandler
             request.CreditCard
         );
 
+        var message = "Your owner profile has been updated.";
+
         var notification = new Notification(
             userId,
-            "Your owner profile has been updated.",
+            message,
             "OwnerProfileUpdated"
         );
 
         await _notificationRepository.AddAsync(notification);
-
         await _repository.SaveChangesAsync();
+
+        await _notificationService.SendNotificationAsync(
+            userId,
+            message
+        );
 
         return Unit.Value;
     }
