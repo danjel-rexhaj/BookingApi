@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BookingPlatform.Application.Interfaces;
 
 namespace BookingPlatform.Infrastructure.Services;
@@ -11,76 +7,96 @@ public class EmailTemplateService : IEmailTemplateService
 {
     private string BuildBaseTemplate(
         string title,
-        string message,
-        string? buttonText = null,
-        string? buttonUrl = null)
+        string previewText,
+        string message)
     {
-        string buttonHtml = string.Empty;
+        return $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>{title}</title>
+</head>
+<body style='margin:0; padding:0; background-color:#f5f7fb; font-family:Arial, Helvetica, sans-serif; color:#1f2937;'>
+    <div style='display:none; max-height:0; overflow:hidden; opacity:0;'>
+        {previewText}
+    </div>
 
-        if (!string.IsNullOrWhiteSpace(buttonText) &&
-            !string.IsNullOrWhiteSpace(buttonUrl))
+    <table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='background-color:#f5f7fb; margin:0; padding:24px 12px;'>
+        <tr>
+            <td align='center'>
+                <table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='max-width:600px; background-color:#ffffff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden;'>
+                    <tr>
+                        <td style='padding:24px 28px 12px 28px; border-bottom:1px solid #eef2f7;'>
+                            <div style='font-size:13px; font-weight:700; letter-spacing:0.4px; color:#2563eb; text-transform:uppercase;'>
+                                AlBooking
+                            </div>
+                            <h1 style='margin:10px 0 0 0; font-size:24px; line-height:1.3; color:#111827; font-weight:700;'>
+                                {title}
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style='padding:28px; font-size:15px; line-height:1.7; color:#374151;'>
+                            {message}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style='padding:18px 28px; border-top:1px solid #eef2f7; background-color:#fafbfc; font-size:12px; line-height:1.6; color:#6b7280; text-align:center;'>
+                            This is an automated email from AlBooking. For support, contact support@albooking.online.
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>";
+    }
+
+    private string BuildInfoCard(params (string Label, string Value)[] rows)
+    {
+        var html = "<div style='margin:20px 0; padding:18px 20px; background-color:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;'>";
+
+        foreach (var row in rows)
         {
-            buttonHtml = $@"
-                <div style='text-align:center; margin:30px 0;'>
-                    <a href='{buttonUrl}'
-                       style='background:#4f46e5; color:#ffffff; padding:14px 24px; text-decoration:none; border-radius:8px; font-weight:bold; display:inline-block;'>
-                        {buttonText}
-                    </a>
-                </div>";
+            html += $@"
+                <p style='margin:0 0 10px 0; font-size:14px; color:#374151;'>
+                    <span style='font-weight:700; color:#111827;'>{row.Label}</span> {row.Value}
+                </p>";
         }
 
-        return $@"
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset='UTF-8'>
-            <title>{title}</title>
-        </head>
-        <body style='margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;'>
-            <div style='max-width:600px; margin:40px auto; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.1);'>
-        
-                <div style='background:linear-gradient(135deg, #4f46e5, #7c3aed); color:#ffffff; padding:30px; text-align:center;'>
-                    <h1 style='margin:0; font-size:28px;'>{title}</h1>
-                </div>
-
-                <div style='padding:30px; color:#333333; font-size:16px; line-height:1.6;'>
-                    {message}
-                    {buttonHtml}
-                </div>
-
-                <div style='background-color:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999999;'>
-                    © 2026 Booking Platform. All rights reserved.
-                </div>
-            </div>
-        </body>
-        </html>";
+        html += "</div>";
+        return html;
     }
 
     public string GetBookingConfirmedEmail(
-    string firstName,
-    string propertyName,
-    DateTime startDate,
-    DateTime endDate,
-    decimal totalPrice)
+        string firstName,
+        string propertyName,
+        DateTime startDate,
+        DateTime endDate,
+        decimal totalPrice)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyName),
+            ("Check-in:", startDate.ToString("dd/MM/yyyy")),
+            ("Check-out:", endDate.ToString("dd/MM/yyyy")),
+            ("Total price:", $"€{totalPrice:0.##}")
+        );
+
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>Great news. Your booking has been confirmed successfully.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p><strong>Property:</strong> {propertyName}</p>
-            <p><strong>Check-in:</strong> {startDate:dd/MM/yyyy}</p>
-            <p><strong>Check-out:</strong> {endDate:dd/MM/yyyy}</p>
-            <p><strong>Total Price:</strong> €{totalPrice:0.##}</p>
-        </div>
-
-        <p>Thank you for choosing Booking Platform. We wish you a pleasant stay.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>Your booking has been confirmed successfully.</p>
+            {details}
+            <p>Thank you for choosing AlBooking. We wish you a pleasant stay.</p>";
 
         return BuildBaseTemplate(
-            "Booking Confirmed",
-            message,
-            "View Booking",
-            "https://yourfrontendurl.com/bookings"
+            "Booking confirmed",
+            "Your booking has been confirmed successfully.",
+            message
         );
     }
 
@@ -90,39 +106,37 @@ public class EmailTemplateService : IEmailTemplateService
         DateTime startDate,
         DateTime endDate)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyName),
+            ("Check-in:", startDate.ToString("dd/MM/yyyy")),
+            ("Check-out:", endDate.ToString("dd/MM/yyyy"))
+        );
+
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>We are sorry, but your booking request was rejected.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p><strong>Property:</strong> {propertyName}</p>
-            <p><strong>Check-in:</strong> {startDate:dd/MM/yyyy}</p>
-            <p><strong>Check-out:</strong> {endDate:dd/MM/yyyy}</p>
-        </div>
-
-        <p>You can explore other available properties on our platform.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>We’re sorry, but your booking request could not be approved.</p>
+            {details}
+            <p>You can explore other available properties on AlBooking.</p>";
 
         return BuildBaseTemplate(
-            "Booking Rejected",
-            message,
-            "Browse Properties",
-            "https://yourfrontendurl.com/properties"
+            "Booking request declined",
+            "Your booking request could not be approved.",
+            message
         );
     }
 
     public string GetWelcomeEmail(string firstName)
     {
         string message = $@"
-            <p>Hello {firstName},</p>
+            <p style='margin-top:0;'>Hello {firstName},</p>
             <p>Your account has been created successfully.</p>
-            <p>You can now explore properties, make bookings, and enjoy our platform.</p>
-            <p>We are happy to have you with us.</p>";
+            <p>You can now explore properties, create bookings, and manage your activity on AlBooking.</p>
+            <p>We’re happy to have you with us.</p>";
 
         return BuildBaseTemplate(
-            "Welcome to Booking Platform",
-            message,
-            "Login",
-            "https://yourfrontendurl.com/login"
+            "Welcome to AlBooking",
+            "Your AlBooking account has been created successfully.",
+            message
         );
     }
 
@@ -134,116 +148,109 @@ public class EmailTemplateService : IEmailTemplateService
         int guestCount,
         decimal totalPrice)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyTitle),
+            ("Check-in:", startDate.ToString("dd/MM/yyyy")),
+            ("Check-out:", endDate.ToString("dd/MM/yyyy")),
+            ("Guests:", guestCount.ToString()),
+            ("Total price:", $"€{totalPrice:0.##}")
+        );
+
         string message = $@"
-            <p>Hello {firstName},</p>
-            <p>Your booking has been created successfully.</p>
-
-            <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-                <p><strong>Property:</strong> {propertyTitle}</p>
-                <p><strong>Check-in:</strong> {startDate:dd/MM/yyyy}</p>
-                <p><strong>Check-out:</strong> {endDate:dd/MM/yyyy}</p>
-                <p><strong>Guests:</strong> {guestCount}</p>
-                <p><strong>Total Price:</strong> €{totalPrice:0.##}</p>
-            </div>
-
-            <p>Thank you for choosing Booking Platform.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>We have received your booking request successfully.</p>
+            {details}
+            <p>You can review your booking details in your account.</p>";
 
         return BuildBaseTemplate(
-            "Booking Created",
-            message,
-            "View Booking",
-            "https://yourfrontendurl.com/bookings"
+            "Booking request received",
+            "We have received your booking request successfully.",
+            message
         );
     }
-
 
     public string GetBookingCancelledEmail(
-    string firstName,
-    string propertyName,
-    DateTime startDate,
-    DateTime endDate)
+        string firstName,
+        string propertyName,
+        DateTime startDate,
+        DateTime endDate)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyName),
+            ("Check-in:", startDate.ToString("dd/MM/yyyy")),
+            ("Check-out:", endDate.ToString("dd/MM/yyyy"))
+        );
+
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>Your booking has been canceled successfully.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p><strong>Property:</strong> {propertyName}</p>
-            <p><strong>Check-in:</strong> {startDate:dd/MM/yyyy}</p>
-            <p><strong>Check-out:</strong> {endDate:dd/MM/yyyy}</p>
-        </div>
-
-        <p>If this was a mistake, you can return to the platform and create a new booking.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>Your booking has been cancelled successfully.</p>
+            {details}
+            <p>If this was a mistake, you can return later and create a new booking.</p>";
 
         return BuildBaseTemplate(
-            "Booking Canceled",
-            message,
-            "Browse Properties",
-            "https://yourfrontendurl.com/properties"
+            "Booking cancelled",
+            "Your booking has been cancelled successfully.",
+            message
         );
     }
+
     public string GetBookingReminderEmail(
         string firstName,
         string propertyTitle,
         DateTime startDate)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyTitle),
+            ("Check-in:", startDate.ToString("dd/MM/yyyy"))
+        );
+
         string message = $@"
-            <p>Hello {firstName},</p>
+            <p style='margin-top:0;'>Hello {firstName},</p>
             <p>This is a friendly reminder that your booking starts tomorrow.</p>
-
-            <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-                <p><strong>Property:</strong> {propertyTitle}</p>
-                <p><strong>Check-in:</strong> {startDate:dd/MM/yyyy}</p>
-            </div>
-
+            {details}
             <p>We wish you a pleasant stay.</p>";
 
         return BuildBaseTemplate(
-            "Booking Reminder",
-            message,
-            "View Booking",
-            "https://yourfrontendurl.com/bookings"
+            "Booking reminder",
+            "Reminder: your booking starts tomorrow.",
+            message
         );
     }
 
     public string GetPasswordChangedEmail(string firstName)
     {
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>Your password has been changed successfully.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p>If you made this change, no further action is needed.</p>
-            <p>If you did not make this change, please contact support immediately and secure your account.</p>
-        </div>
-
-        <p>For your security, please make sure your new password is strong and unique.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>Your password has been changed successfully.</p>
+            <div style='margin:20px 0; padding:18px 20px; background-color:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;'>
+                <p style='margin:0 0 10px 0;'>If you made this change, no further action is needed.</p>
+                <p style='margin:0;'>If you did not make this change, please contact support immediately.</p>
+            </div>
+            <p>For your security, make sure your new password is strong and unique.</p>";
 
         return BuildBaseTemplate(
-            "Password Changed Successfully",
-            message,
-            "Go to Profile",
-            "https://yourfrontendurl.com/profile"
+            "Password updated",
+            "Your password has been changed successfully.",
+            message
         );
     }
 
     public string GetOwnerProfileCreatedEmail(string firstName, string businessName)
     {
+        string details = BuildInfoCard(
+            ("Business name:", businessName)
+        );
+
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>Your owner profile has been created successfully.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p><strong>Business Name:</strong> {businessName}</p>
-        </div>
-
-        <p>You can now create and manage your properties from your dashboard.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>Your owner profile has been created successfully.</p>
+            {details}
+            <p>You can now create and manage your properties on AlBooking.</p>";
 
         return BuildBaseTemplate(
-            "Welcome as an Owner",
-            message,
-            "Go to Dashboard",
-            "https://yourfrontendurl.com/dashboard"
+            "Owner profile created",
+            "Your owner profile has been created successfully.",
+            message
         );
     }
 
@@ -256,26 +263,25 @@ public class EmailTemplateService : IEmailTemplateService
         int maxGuests,
         decimal pricePerNight)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyName),
+            ("City:", city),
+            ("Country:", country),
+            ("Type:", propertyType),
+            ("Max guests:", maxGuests.ToString()),
+            ("Price per night:", $"€{pricePerNight:0.##}")
+        );
+
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>Good news. Your property has been approved successfully.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p><strong>Property:</strong> {propertyName}</p>
-            <p><strong>City:</strong> {city}</p>
-            <p><strong>Country:</strong> {country}</p>
-            <p><strong>Type:</strong> {propertyType}</p>
-            <p><strong>Max Guests:</strong> {maxGuests}</p>
-            <p><strong>Price per Night:</strong> €{pricePerNight:0.##}</p>
-        </div>
-
-        <p>Your listing is now active and visible on the platform.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>Your property has been approved successfully.</p>
+            {details}
+            <p>Your listing is now active and visible on the platform.</p>";
 
         return BuildBaseTemplate(
-            "Property Approved",
-            message,
-            "Go to Dashboard",
-            "https://yourfrontendurl.com/dashboard"
+            "Property approved",
+            "Your property has been approved successfully.",
+            message
         );
     }
 
@@ -288,48 +294,46 @@ public class EmailTemplateService : IEmailTemplateService
         int maxGuests,
         decimal pricePerNight)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyName),
+            ("City:", city),
+            ("Country:", country),
+            ("Type:", propertyType),
+            ("Max guests:", maxGuests.ToString()),
+            ("Price per night:", $"€{pricePerNight:0.##}")
+        );
+
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>We are sorry to inform you that your property has been rejected.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p><strong>Property:</strong> {propertyName}</p>
-            <p><strong>City:</strong> {city}</p>
-            <p><strong>Country:</strong> {country}</p>
-            <p><strong>Type:</strong> {propertyType}</p>
-            <p><strong>Max Guests:</strong> {maxGuests}</p>
-            <p><strong>Price per Night:</strong> €{pricePerNight:0.##}</p>
-        </div>
-
-        <p>Please review your property details and update the listing if needed.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>We’re sorry to inform you that your property could not be approved.</p>
+            {details}
+            <p>Please review your property details and update the listing if needed.</p>";
 
         return BuildBaseTemplate(
-            "Property Rejected",
-            message,
-            "Go to Dashboard",
-            "https://yourfrontendurl.com/dashboard"
+            "Property declined",
+            "Your property could not be approved.",
+            message
         );
     }
 
     public string GetNewReviewEmail(string firstName, string propertyName, int rating, string comment)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyName),
+            ("Rating:", $"{rating}/5"),
+            ("Comment:", comment)
+        );
+
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>Your property has received a new review.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p><strong>Property:</strong> {propertyName}</p>
-            <p><strong>Rating:</strong> {rating}/5</p>
-            <p><strong>Comment:</strong> {comment}</p>
-        </div>
-
-        <p>You can check your dashboard to see more details.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>Your property has received a new review.</p>
+            {details}
+            <p>You can review the details from your dashboard later.</p>";
 
         return BuildBaseTemplate(
-            "New Review Received",
-            message,
-            "Go to Dashboard",
-            "https://yourfrontendurl.com/dashboard"
+            "New review received",
+            "Your property has received a new review.",
+            message
         );
     }
 
@@ -341,25 +345,24 @@ public class EmailTemplateService : IEmailTemplateService
         int guestCount,
         decimal totalPrice)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyName),
+            ("Check-in:", startDate.ToString("dd/MM/yyyy")),
+            ("Check-out:", endDate.ToString("dd/MM/yyyy")),
+            ("Guests:", guestCount.ToString()),
+            ("Total price:", $"€{totalPrice:0.##}")
+        );
+
         string message = $@"
-        <p>Hello {firstName},</p>
-        <p>You have received a new booking request for your property.</p>
-
-        <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-            <p><strong>Property:</strong> {propertyName}</p>
-            <p><strong>Check-in:</strong> {startDate:dd/MM/yyyy}</p>
-            <p><strong>Check-out:</strong> {endDate:dd/MM/yyyy}</p>
-            <p><strong>Guests:</strong> {guestCount}</p>
-            <p><strong>Total Price:</strong> €{totalPrice:0.##}</p>
-        </div>
-
-        <p>Please review this booking request from your dashboard.</p>";
+            <p style='margin-top:0;'>Hello {firstName},</p>
+            <p>You have received a new booking request for your property.</p>
+            {details}
+            <p>Please review this request in your dashboard.</p>";
 
         return BuildBaseTemplate(
-            "New Booking Request",
-            message,
-            "Go to Dashboard",
-            "https://yourfrontendurl.com/dashboard"
+            "New booking request",
+            "You have received a new booking request.",
+            message
         );
     }
 
@@ -372,26 +375,25 @@ public class EmailTemplateService : IEmailTemplateService
         int maxGuests,
         decimal pricePerNight)
     {
+        string details = BuildInfoCard(
+            ("Property:", propertyName),
+            ("City:", city),
+            ("Country:", country),
+            ("Type:", propertyType),
+            ("Max guests:", maxGuests.ToString()),
+            ("Price per night:", $"€{pricePerNight:0.##}")
+        );
+
         string message = $@"
-            <p>Hello {firstName},</p>
+            <p style='margin-top:0;'>Hello {firstName},</p>
             <p>We would like to inform you that your property has been suspended.</p>
-
-            <div style='background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin:25px 0;'>
-                <p><strong>Property:</strong> {propertyName}</p>
-                <p><strong>City:</strong> {city}</p>
-                <p><strong>Country:</strong> {country}</p>
-                <p><strong>Type:</strong> {propertyType}</p>
-                <p><strong>Max Guests:</strong> {maxGuests}</p>
-                <p><strong>Price per Night:</strong> €{pricePerNight:0.##}</p>
-            </div>
-
+            {details}
             <p>Please review your listing or contact support for more information.</p>";
 
         return BuildBaseTemplate(
-            "Property Suspended",
-            message,
-            "Go to Dashboard",
-            "https://yourfrontendurl.com/dashboard");
+            "Property suspended",
+            "Your property has been suspended.",
+            message
+        );
     }
-
 }
